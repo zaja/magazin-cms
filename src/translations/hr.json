@@ -1,0 +1,248 @@
+{
+  "general": {
+    "save": "Spremi",
+    "cancel": "Odustani",
+    "delete": "Obriši",
+    "edit": "Uredi",
+    "create": "Kreiraj",
+    "update": "Ažuriraj",
+    "search": "Pretraži",
+    "filter": "Filtriraj",
+    "loading": "Učitavanje...",
+    "noResults": "Nema rezultata",
+    "confirm": "Potvrdi",
+    "back": "Natrag",
+    "next": "Dalje",
+    "previous": "Prethodno",
+    "publish": "Objavi",
+    "unpublish": "Povuci",
+    "draft": "Skica",
+    "published": "Objavljeno",
+    "archived": "Arhivirano",
+    "pending": "Na čekanju",
+    "approved": "Odobreno",
+    "rejected": "Odbijeno",
+    "active": "Aktivno",
+    "inactive": "Neaktivno",
+    "yes": "Da",
+    "no": "Ne",
+    "all": "Sve",
+    "none": "Ništa",
+    "actions": "Akcije",
+    "status": "Status",
+    "date": "Datum",
+    "time": "Vrijeme",
+    "author": "Autor",
+    "title": "Naslov",
+    "description": "Opis",
+    "content": "Sadržaj",
+    "image": "Slika",
+    "images": "Slike",
+    "file": "Datoteka",
+    "files": "Datoteke",
+    "upload": "Učitaj",
+    "download": "Preuzmi",
+    "preview": "Pregled",
+    "settings": "Postavke",
+    "dashboard": "Nadzorna ploča",
+    "logout": "Odjava",
+    "login": "Prijava",
+    "email": "Email",
+    "password": "Lozinka",
+    "username": "Korisničko ime",
+    "name": "Ime",
+    "firstName": "Ime",
+    "lastName": "Prezime",
+    "phone": "Telefon",
+    "address": "Adresa",
+    "city": "Grad",
+    "country": "Država",
+    "website": "Web stranica",
+    "language": "Jezik",
+    "timezone": "Vremenska zona",
+    "createdAt": "Kreirano",
+    "updatedAt": "Ažurirano",
+    "version": "Verzija",
+    "versions": "Verzije",
+    "restore": "Vrati",
+    "compare": "Usporedi",
+    "duplicate": "Dupliciraj",
+    "move": "Premjesti",
+    "copy": "Kopiraj",
+    "paste": "Zalijepi",
+    "cut": "Izreži",
+    "undo": "Poništi",
+    "redo": "Ponovi"
+  },
+  "collections": {
+    "posts": {
+      "singular": "Objava",
+      "plural": "Objave",
+      "fields": {
+        "title": "Naslov",
+        "slug": "URL oznaka",
+        "excerpt": "Isječak",
+        "content": "Sadržaj",
+        "featuredImage": "Istaknuta slika",
+        "categories": "Kategorije",
+        "tags": "Oznake",
+        "author": "Autor",
+        "publishDate": "Datum objave",
+        "readingTime": "Vrijeme čitanja",
+        "viewCount": "Broj pregleda",
+        "allowComments": "Dozvoli komentare",
+        "relatedPosts": "Povezane objave"
+      }
+    },
+    "pages": {
+      "singular": "Stranica",
+      "plural": "Stranice",
+      "fields": {
+        "title": "Naslov",
+        "slug": "URL oznaka",
+        "content": "Sadržaj",
+        "featuredImage": "Istaknuta slika",
+        "parent": "Nadređena stranica"
+      }
+    },
+    "categories": {
+      "singular": "Kategorija",
+      "plural": "Kategorije",
+      "fields": {
+        "name": "Naziv",
+        "slug": "URL oznaka",
+        "description": "Opis",
+        "parent": "Nadređena kategorija",
+        "image": "Slika"
+      }
+    },
+    "tags": {
+      "singular": "Oznaka",
+      "plural": "Oznake",
+      "fields": {
+        "name": "Naziv",
+        "slug": "URL oznaka",
+        "description": "Opis",
+        "color": "Boja"
+      }
+    },
+    "comments": {
+      "singular": "Komentar",
+      "plural": "Komentari",
+      "fields": {
+        "post": "Objava",
+        "author": "Autor",
+        "content": "Sadržaj",
+        "status": "Status",
+        "parentComment": "Nadređeni komentar"
+      },
+      "statuses": {
+        "pending": "Na čekanju",
+        "approved": "Odobren",
+        "spam": "Spam",
+        "deleted": "Obrisan"
+      }
+    },
+    "media": {
+      "singular": "Medij",
+      "plural": "Mediji",
+      "fields": {
+        "altText": "Alternativni tekst",
+        "caption": "Opis",
+        "credit": "Zasluge",
+        "folder": "Mapa"
+      }
+    },
+    "users": {
+      "singular": "Korisnik",
+      "plural": "Korisnici",
+      "fields": {
+        "firstName": "Ime",
+        "lastName": "Prezime",
+        "email": "Email",
+        "role": "Uloga",
+        "bio": "Biografija",
+        "avatar": "Avatar"
+      },
+      "roles": {
+        "admin": "Administrator",
+        "editor": "Urednik",
+        "author": "Autor",
+        "subscriber": "Pretplatnik"
+      }
+    },
+    "subscribers": {
+      "singular": "Pretplatnik",
+      "plural": "Pretplatnici",
+      "fields": {
+        "email": "Email",
+        "name": "Ime",
+        "status": "Status",
+        "subscribedAt": "Pretplaćen",
+        "preferences": "Postavke"
+      },
+      "statuses": {
+        "pending": "Na čekanju potvrde",
+        "active": "Aktivan",
+        "unsubscribed": "Odjavljeno",
+        "bounced": "Odbijeno"
+      }
+    }
+  },
+  "globals": {
+    "settings": {
+      "title": "Postavke",
+      "fields": {
+        "siteName": "Naziv stranice",
+        "siteDescription": "Opis stranice",
+        "logo": "Logo",
+        "favicon": "Favicon",
+        "language": "Jezik",
+        "timezone": "Vremenska zona",
+        "postsPerPage": "Objava po stranici",
+        "allowRegistration": "Dozvoli registraciju",
+        "moderateComments": "Moderiraj komentare",
+        "maintenanceMode": "Način održavanja"
+      }
+    },
+    "seo": {
+      "title": "SEO",
+      "fields": {
+        "metaTitle": "Meta naslov",
+        "metaDescription": "Meta opis",
+        "ogImage": "OG slika",
+        "twitterHandle": "Twitter profil",
+        "googleAnalytics": "Google Analytics ID"
+      }
+    },
+    "emailConfig": {
+      "title": "Email konfiguracija",
+      "fields": {
+        "provider": "Pružatelj",
+        "smtpHost": "SMTP host",
+        "smtpPort": "SMTP port",
+        "fromEmail": "Email pošiljatelja",
+        "fromName": "Ime pošiljatelja"
+      }
+    }
+  },
+  "validation": {
+    "required": "Ovo polje je obavezno",
+    "email": "Unesite valjanu email adresu",
+    "url": "Unesite valjani URL",
+    "minLength": "Minimalno {{min}} znakova",
+    "maxLength": "Maksimalno {{max}} znakova",
+    "unique": "Ova vrijednost već postoji",
+    "invalidFormat": "Neispravan format"
+  },
+  "messages": {
+    "saved": "Uspješno spremljeno",
+    "deleted": "Uspješno obrisano",
+    "updated": "Uspješno ažurirano",
+    "created": "Uspješno kreirano",
+    "error": "Došlo je do greške",
+    "confirmDelete": "Jeste li sigurni da želite obrisati?",
+    "noChanges": "Nema promjena za spremiti",
+    "unsavedChanges": "Imate nespremljene promjene"
+  }
+}

@@ -1,0 +1,248 @@
+{
+  "general": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "update": "Update",
+    "search": "Search",
+    "filter": "Filter",
+    "loading": "Loading...",
+    "noResults": "No results",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "publish": "Publish",
+    "unpublish": "Unpublish",
+    "draft": "Draft",
+    "published": "Published",
+    "archived": "Archived",
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "active": "Active",
+    "inactive": "Inactive",
+    "yes": "Yes",
+    "no": "No",
+    "all": "All",
+    "none": "None",
+    "actions": "Actions",
+    "status": "Status",
+    "date": "Date",
+    "time": "Time",
+    "author": "Author",
+    "title": "Title",
+    "description": "Description",
+    "content": "Content",
+    "image": "Image",
+    "images": "Images",
+    "file": "File",
+    "files": "Files",
+    "upload": "Upload",
+    "download": "Download",
+    "preview": "Preview",
+    "settings": "Settings",
+    "dashboard": "Dashboard",
+    "logout": "Logout",
+    "login": "Login",
+    "email": "Email",
+    "password": "Password",
+    "username": "Username",
+    "name": "Name",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "phone": "Phone",
+    "address": "Address",
+    "city": "City",
+    "country": "Country",
+    "website": "Website",
+    "language": "Language",
+    "timezone": "Timezone",
+    "createdAt": "Created At",
+    "updatedAt": "Updated At",
+    "version": "Version",
+    "versions": "Versions",
+    "restore": "Restore",
+    "compare": "Compare",
+    "duplicate": "Duplicate",
+    "move": "Move",
+    "copy": "Copy",
+    "paste": "Paste",
+    "cut": "Cut",
+    "undo": "Undo",
+    "redo": "Redo"
+  },
+  "collections": {
+    "posts": {
+      "singular": "Post",
+      "plural": "Posts",
+      "fields": {
+        "title": "Title",
+        "slug": "Slug",
+        "excerpt": "Excerpt",
+        "content": "Content",
+        "featuredImage": "Featured Image",
+        "categories": "Categories",
+        "tags": "Tags",
+        "author": "Author",
+        "publishDate": "Publish Date",
+        "readingTime": "Reading Time",
+        "viewCount": "View Count",
+        "allowComments": "Allow Comments",
+        "relatedPosts": "Related Posts"
+      }
+    },
+    "pages": {
+      "singular": "Page",
+      "plural": "Pages",
+      "fields": {
+        "title": "Title",
+        "slug": "Slug",
+        "content": "Content",
+        "featuredImage": "Featured Image",
+        "parent": "Parent Page"
+      }
+    },
+    "categories": {
+      "singular": "Category",
+      "plural": "Categories",
+      "fields": {
+        "name": "Name",
+        "slug": "Slug",
+        "description": "Description",
+        "parent": "Parent Category",
+        "image": "Image"
+      }
+    },
+    "tags": {
+      "singular": "Tag",
+      "plural": "Tags",
+      "fields": {
+        "name": "Name",
+        "slug": "Slug",
+        "description": "Description",
+        "color": "Color"
+      }
+    },
+    "comments": {
+      "singular": "Comment",
+      "plural": "Comments",
+      "fields": {
+        "post": "Post",
+        "author": "Author",
+        "content": "Content",
+        "status": "Status",
+        "parentComment": "Parent Comment"
+      },
+      "statuses": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "spam": "Spam",
+        "deleted": "Deleted"
+      }
+    },
+    "media": {
+      "singular": "Media",
+      "plural": "Media",
+      "fields": {
+        "altText": "Alt Text",
+        "caption": "Caption",
+        "credit": "Credit",
+        "folder": "Folder"
+      }
+    },
+    "users": {
+      "singular": "User",
+      "plural": "Users",
+      "fields": {
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "email": "Email",
+        "role": "Role",
+        "bio": "Bio",
+        "avatar": "Avatar"
+      },
+      "roles": {
+        "admin": "Administrator",
+        "editor": "Editor",
+        "author": "Author",
+        "subscriber": "Subscriber"
+      }
+    },
+    "subscribers": {
+      "singular": "Subscriber",
+      "plural": "Subscribers",
+      "fields": {
+        "email": "Email",
+        "name": "Name",
+        "status": "Status",
+        "subscribedAt": "Subscribed At",
+        "preferences": "Preferences"
+      },
+      "statuses": {
+        "pending": "Pending Confirmation",
+        "active": "Active",
+        "unsubscribed": "Unsubscribed",
+        "bounced": "Bounced"
+      }
+    }
+  },
+  "globals": {
+    "settings": {
+      "title": "Settings",
+      "fields": {
+        "siteName": "Site Name",
+        "siteDescription": "Site Description",
+        "logo": "Logo",
+        "favicon": "Favicon",
+        "language": "Language",
+        "timezone": "Timezone",
+        "postsPerPage": "Posts Per Page",
+        "allowRegistration": "Allow Registration",
+        "moderateComments": "Moderate Comments",
+        "maintenanceMode": "Maintenance Mode"
+      }
+    },
+    "seo": {
+      "title": "SEO",
+      "fields": {
+        "metaTitle": "Meta Title",
+        "metaDescription": "Meta Description",
+        "ogImage": "OG Image",
+        "twitterHandle": "Twitter Handle",
+        "googleAnalytics": "Google Analytics ID"
+      }
+    },
+    "emailConfig": {
+      "title": "Email Configuration",
+      "fields": {
+        "provider": "Provider",
+        "smtpHost": "SMTP Host",
+        "smtpPort": "SMTP Port",
+        "fromEmail": "From Email",
+        "fromName": "From Name"
+      }
+    }
+  },
+  "validation": {
+    "required": "This field is required",
+    "email": "Please enter a valid email address",
+    "url": "Please enter a valid URL",
+    "minLength": "Minimum {{min}} characters",
+    "maxLength": "Maximum {{max}} characters",
+    "unique": "This value already exists",
+    "invalidFormat": "Invalid format"
+  },
+  "messages": {
+    "saved": "Successfully saved",
+    "deleted": "Successfully deleted",
+    "updated": "Successfully updated",
+    "created": "Successfully created",
+    "error": "An error occurred",
+    "confirmDelete": "Are you sure you want to delete?",
+    "noChanges": "No changes to save",
+    "unsavedChanges": "You have unsaved changes"
+  }
+}

@@ -73,26 +73,23 @@ export async function POST(request: NextRequest) {
     const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
     const verifyUrl = `${serverUrl}/api/auth/verify?token=${magicLinkToken}${redirectTo ? `&redirectTo=${encodeURIComponent(redirectTo)}` : ''}`
 
+    const variables = {
+      loginUrl: verifyUrl,
+      email: email.toLowerCase(),
+      expiresIn: '15 minuta',
+    }
+
+    const template = await emailService.getTemplate('magicLink', variables)
+
     await emailService.send({
       to: email,
-      subject: 'Vaš link za prijavu',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #1a1a1a;">Prijava na vaš račun</h2>
-          <p>Kliknite na gumb ispod za prijavu. Link vrijedi 15 minuta.</p>
-          <p style="margin: 30px 0;">
-            <a href="${verifyUrl}" style="background: #1a1a1a; color: white; padding: 14px 28px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: 600;">
-              Prijavi se
-            </a>
-          </p>
-          <p style="font-size: 14px; color: #666;">
-            Ako niste zatražili ovu prijavu, možete sigurno ignorirati ovaj email.
-          </p>
-          <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
-          <p style="font-size: 12px; color: #999;">
-            Ovaj link možete koristiti samo jednom i vrijedi 15 minuta.
-          </p>
-        </div>
+      subject: template?.subject || 'Vaš link za prijavu',
+      html:
+        template?.html ||
+        `
+        <p>Primili smo zahtjev za prijavu na vaš račun (${email}). Kliknite na link ispod da se prijavite:</p>
+        <p><a href="${verifyUrl}" style="background: #1a1a1a; color: white; padding: 14px 28px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: 600;">Prijavi se</a></p>
+        <p>Link vrijedi 15 minuta. Ako niste zatražili prijavu, možete ignorirati ovaj email.</p>
       `,
     })
 

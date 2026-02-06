@@ -4,7 +4,6 @@ import { Banner } from '@payloadcms/ui/elements/Banner'
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 
-import { SeedButton } from './SeedButton'
 import './index.scss'
 
 const baseClass = 'before-dashboard'
@@ -257,10 +256,6 @@ const BeforeDashboard: React.FC = () => {
             </li>
             <li>
               <Link href="/admin/collections/subscribers">Upravljaj pretplatnicima</Link>
-            </li>
-            <li>
-              <SeedButton />
-              {' - demo sadržaj'}
             </li>
           </ul>
         </div>

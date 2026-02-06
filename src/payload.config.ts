@@ -21,6 +21,7 @@ import { Header } from './Header/config'
 import { Settings } from './globals/Settings'
 import { SEO } from './globals/SEO'
 import { EmailConfig } from './globals/EmailConfig'
+import { ContentStyles } from './globals/ContentStyles'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
@@ -92,9 +93,8 @@ export default buildConfig({
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 2000,
     },
-    // Schema is manually managed - disable both push and migrations
     push: false,
-    migrationDir: undefined,
+    migrationDir: path.resolve(dirname, 'migrations'),
   }),
   collections: [
     Pages,
@@ -109,7 +109,7 @@ export default buildConfig({
     ImportedPosts,
   ],
   cors: [getServerSideURL()].filter(Boolean),
-  globals: [Header, Footer, Settings, SEO, EmailConfig],
+  globals: [Header, Footer, Settings, SEO, EmailConfig, ContentStyles],
   plugins,
   secret: process.env.PAYLOAD_SECRET,
   sharp,

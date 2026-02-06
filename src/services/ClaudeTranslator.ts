@@ -10,6 +10,7 @@ export interface TranslatedArticle {
   content: string
   excerpt: string
   seo: SEOMetadata
+  imageKeywords: string
   tokensUsed: number
 }
 
@@ -28,6 +29,12 @@ interface ClaudeResponse {
     metaDescription: string
     keywords: string[]
   }
+  imageKeywords: string
+}
+
+export interface ContentStyleConfig {
+  prompt: string
+  maxTokens: number
 }
 
 export class ClaudeTranslator {
@@ -57,21 +64,27 @@ export class ClaudeTranslator {
   async translateArticle(
     originalContent: string,
     originalTitle: string,
+    styleConfig?: ContentStyleConfig,
   ): Promise<TranslatedArticle> {
     let lastError: Error | null = null
+    const maxTokens = styleConfig?.maxTokens || 4096
 
     for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
       try {
         console.log(`[ClaudeTranslator] Translation attempt ${attempt}/${this.maxRetries}`)
 
+        const prompt = styleConfig?.prompt
+          ? this.buildCustomPrompt(styleConfig.prompt, originalContent, originalTitle)
+          : this.buildTranslationPrompt(originalContent, originalTitle)
+
         const response = await this.client.messages.create({
           model: this.model,
-          max_tokens: 4096,
+          max_tokens: maxTokens,
           temperature: 0.3,
           messages: [
             {
               role: 'user',
-              content: this.buildTranslationPrompt(originalContent, originalTitle),
+              content: prompt,
             },
           ],
         })
@@ -94,6 +107,7 @@ export class ClaudeTranslator {
           content: parsed.content,
           excerpt: parsed.excerpt,
           seo: parsed.seo,
+          imageKeywords: parsed.imageKeywords || '',
           tokensUsed,
         }
       } catch (error) {
@@ -164,6 +178,17 @@ VAŽNO: Odgovori SAMO sa JSON objektom, bez dodatnog teksta.`
   }
 
   /**
+   * Builds a prompt from custom style config
+   */
+  private buildCustomPrompt(promptTemplate: string, content: string, title: string): string {
+    const maxContentLength = 8000
+    const truncatedContent =
+      content.length > maxContentLength ? content.substring(0, maxContentLength) + '...' : content
+
+    return promptTemplate.replace(/\{title\}/g, title).replace(/\{content\}/g, truncatedContent)
+  }
+
+  /**
    * Builds the translation prompt for Claude
    * Creates a condensed summary instead of full translation
    */
@@ -211,7 +236,8 @@ IZLAZNI FORMAT - striktno JSON:
     "metaTitle": "SEO naslov (max 60 znakova)",
     "metaDescription": "SEO opis (150-160 znakova)",
     "keywords": ["ključna riječ 1", "ključna riječ 2"]
-  }
+  },
+  "imageKeywords": "2-4 engleske ključne riječi za stock fotografiju"
 }
 
 VAŽNO: Odgovori SAMO sa JSON objektom. Članak mora biti KRATAK i INFORMATIVAN.`

@@ -109,6 +109,19 @@ export const ImportedPosts: CollectionConfig = {
       },
     },
     {
+      name: 'contentStyle',
+      type: 'select',
+      defaultValue: 'short',
+      options: [
+        { label: 'Kratki sažetak (150-400 riječi)', value: 'short' },
+        { label: 'Srednji članak (400-800 riječi)', value: 'medium' },
+        { label: 'Opširni članak (800-1500+ riječi)', value: 'full' },
+      ],
+      admin: {
+        description: 'Odaberite stil prijevoda (postavke promptova: Settings → Stilovi sadržaja)',
+      },
+    },
+    {
       name: 'metadata',
       type: 'json',
       admin: {

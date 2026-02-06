@@ -24,6 +24,54 @@ interface EmailConfig {
     fromEmail?: string
     fromName?: string
   }
+  templates?: Record<string, unknown>
+}
+
+interface LexicalNode {
+  type: string
+  text?: string
+  format?: number
+  children?: LexicalNode[]
+  tag?: string
+  listType?: string
+}
+
+function lexicalNodeToHtml(node: LexicalNode): string {
+  if (node.type === 'text') {
+    let text = node.text || ''
+    const fmt = node.format || 0
+    if (fmt & 1) text = `<strong>${text}</strong>`
+    if (fmt & 2) text = `<em>${text}</em>`
+    if (fmt & 4) text = `<s>${text}</s>`
+    if (fmt & 8) text = `<u>${text}</u>`
+    return text
+  }
+
+  const childrenHtml = (node.children || []).map(lexicalNodeToHtml).join('')
+
+  switch (node.type) {
+    case 'root':
+      return childrenHtml
+    case 'paragraph':
+      return `<p>${childrenHtml}</p>`
+    case 'heading':
+      return `<${node.tag || 'h2'}>${childrenHtml}</${node.tag || 'h2'}>`
+    case 'list':
+      return node.listType === 'number' ? `<ol>${childrenHtml}</ol>` : `<ul>${childrenHtml}</ul>`
+    case 'listitem':
+      return `<li>${childrenHtml}</li>`
+    case 'link':
+      return `<a href="#">${childrenHtml}</a>`
+    case 'linebreak':
+      return '<br>'
+    default:
+      return childrenHtml
+  }
+}
+
+function lexicalToHtml(lexicalData: Record<string, unknown> | null): string {
+  if (!lexicalData?.root) return ''
+  return lexicalNodeToHtml(lexicalData.root as LexicalNode)
 }
 
 class EmailService {
@@ -36,17 +84,78 @@ class EmailService {
   }
 
   private async loadConfig(): Promise<void> {
-    if (!this.payload) return
+    if (!this.payload) {
+      // No Payload instance — try env-only config
+      this.config = this.loadEnvConfig()
+      return
+    }
 
     try {
       const emailConfig = await this.payload.findGlobal({
         slug: 'email-config',
       })
 
-      this.config = emailConfig as unknown as EmailConfig
+      const dbConfig = emailConfig as unknown as EmailConfig
+
+      // Merge: DB values take priority, env vars fill in gaps
+      this.config = this.mergeWithEnv(dbConfig)
     } catch (error) {
-      console.error('Failed to load email config:', error)
-      this.config = null
+      console.error('Failed to load email config from DB, falling back to env:', error)
+      this.config = this.loadEnvConfig()
+    }
+  }
+
+  private loadEnvConfig(): EmailConfig | null {
+    const hasResend = Boolean(process.env.RESEND_API_KEY)
+    const hasSmtp = Boolean(process.env.SMTP_HOST)
+
+    if (!hasResend && !hasSmtp) return null
+
+    return {
+      provider: hasResend ? 'resend' : 'smtp',
+      smtp: hasSmtp
+        ? {
+            host: process.env.SMTP_HOST,
+            port: process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : 587,
+            secure: process.env.SMTP_SECURE === 'true',
+            user: process.env.SMTP_USER,
+            password: process.env.SMTP_PASSWORD,
+            fromEmail: process.env.SMTP_FROM_EMAIL,
+            fromName: process.env.SMTP_FROM_NAME,
+          }
+        : undefined,
+      resend: hasResend
+        ? {
+            apiKey: process.env.RESEND_API_KEY,
+            fromEmail: process.env.RESEND_FROM_EMAIL,
+            fromName: process.env.RESEND_FROM_NAME,
+          }
+        : undefined,
+    }
+  }
+
+  private mergeWithEnv(dbConfig: EmailConfig): EmailConfig {
+    const envConfig = this.loadEnvConfig()
+    if (!envConfig) return dbConfig
+
+    // DB values take priority — env fills in blanks
+    return {
+      provider: dbConfig.provider || envConfig.provider,
+      smtp: {
+        host: dbConfig.smtp?.host || envConfig.smtp?.host,
+        port: dbConfig.smtp?.port || envConfig.smtp?.port,
+        secure: dbConfig.smtp?.secure ?? envConfig.smtp?.secure,
+        user: dbConfig.smtp?.user || envConfig.smtp?.user,
+        password: dbConfig.smtp?.password || envConfig.smtp?.password,
+        fromEmail: dbConfig.smtp?.fromEmail || envConfig.smtp?.fromEmail,
+        fromName: dbConfig.smtp?.fromName || envConfig.smtp?.fromName,
+      },
+      resend: {
+        apiKey: dbConfig.resend?.apiKey || envConfig.resend?.apiKey,
+        fromEmail: dbConfig.resend?.fromEmail || envConfig.resend?.fromEmail,
+        fromName: dbConfig.resend?.fromName || envConfig.resend?.fromName,
+      },
+      templates: dbConfig.templates,
     }
   }
 
@@ -173,6 +282,43 @@ class EmailService {
       rendered = rendered.replace(new RegExp(`{{${key}}}`, 'g'), value)
     }
     return rendered
+  }
+
+  /**
+   * Get a template (subject + body HTML) from the email-config global.
+   * Returns null if template is not configured, so caller can fall back to hardcoded.
+   */
+  async getTemplate(
+    templateName: string,
+    variables: Record<string, string>,
+  ): Promise<{ subject: string; html: string } | null> {
+    if (!this.payload) return null
+
+    try {
+      const emailConfig = await this.payload.findGlobal({ slug: 'email-config' })
+      const templates = (emailConfig as unknown as { templates?: Record<string, unknown> })
+        .templates
+      if (!templates) return null
+
+      const subjectKey = `${templateName}Subject`
+      const bodyKey = templateName
+
+      const subjectTemplate = templates[subjectKey] as string | null
+      const bodyLexical = templates[bodyKey] as Record<string, unknown> | null
+
+      if (!bodyLexical?.root) return null
+
+      const bodyHtml = lexicalToHtml(bodyLexical)
+      const subject = subjectTemplate || ''
+
+      return {
+        subject: this.renderTemplate(subject, variables),
+        html: this.renderTemplate(bodyHtml, variables),
+      }
+    } catch (error) {
+      console.warn(`[EmailService] Failed to load template "${templateName}":`, error)
+      return null
+    }
   }
 }
 

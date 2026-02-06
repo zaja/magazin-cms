@@ -238,6 +238,7 @@ export const RSSFeeds: CollectionConfig = {
             message: 'Import procesiran, draft post kreiran!',
           })
         } catch (error) {
+          console.error('[process-single] Full error:', error)
           return Response.json(
             { success: false, error: error instanceof Error ? error.message : 'Unknown error' },
             { status: 500 },

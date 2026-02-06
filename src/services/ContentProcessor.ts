@@ -8,6 +8,8 @@ import { JSDOM } from 'jsdom'
 import { Readability } from '@mozilla/readability'
 import sharp from 'sharp'
 import { ClaudeTranslator, type TranslatedArticle } from './ClaudeTranslator'
+import type { ContentStyleConfig } from './ClaudeTranslator'
+import { PixabayService } from './PixabayService'
 import { RateLimiter } from './RateLimiter'
 import { htmlToLexical } from '../utilities/lexical-converter'
 import { generateSlug, generateUniqueSlug } from '../utilities/slug-generator'
@@ -121,7 +123,7 @@ export class ContentProcessor {
     const importRecord = (await this.payload.findByID({
       collection: 'imported-posts',
       id: importedPostId,
-      depth: 1,
+      depth: 0,
     })) as unknown as Record<string, unknown>
 
     if (!importRecord) {
@@ -129,15 +131,25 @@ export class ContentProcessor {
     }
 
     const originalURL = importRecord.originalURL as string
-    const metadata = (importRecord.metadata as Record<string, unknown>) || {}
-    const rssFeed = importRecord.rssFeed as Record<string, unknown>
+    const rssFeedId = importRecord.rssFeed as number | string
 
-    if (!rssFeed) {
+    if (!rssFeedId) {
       throw new Error('RSS feed not found for import')
     }
 
+    // Fetch feed with depth: 0 to get raw IDs for category/tags
+    const rssFeed = (await this.payload.findByID({
+      collection: 'rss-feeds' as 'posts',
+      id: String(rssFeedId),
+      depth: 0,
+    })) as unknown as Record<string, unknown>
+
     // Fetch article content
     const articleContent = await this.fetchArticleContent(originalURL)
+
+    // Load content style config
+    const contentStyleKey = (importRecord.contentStyle as string) || 'short'
+    const styleConfig = await this.loadContentStyle(contentStyleKey)
 
     // Translate content if enabled
     let translatedData: TranslatedArticle
@@ -145,7 +157,11 @@ export class ContentProcessor {
 
     if (translateContent) {
       translatedData = await this.rateLimiter.add(() =>
-        this.translator.translateArticle(articleContent.content, articleContent.title),
+        this.translator.translateArticle(
+          articleContent.content,
+          articleContent.title,
+          styleConfig || undefined,
+        ),
       )
     } else {
       translatedData = {
@@ -157,6 +173,7 @@ export class ContentProcessor {
           metaDescription: articleContent.excerpt.substring(0, 160),
           keywords: [],
         },
+        imageKeywords: '',
         tokensUsed: 0,
       }
     }
@@ -167,15 +184,21 @@ export class ContentProcessor {
       throw new Error(`Content validation failed: ${validation.issues.join(', ')}`)
     }
 
-    // Download featured image
+    // Fetch image from Pixabay based on AI-generated keywords
     let featuredImageId: number | null = null
-    const imageUrl = articleContent.featuredImage || (metadata.media as string)
+    const imageKeywords =
+      translatedData.imageKeywords || translatedData.seo?.keywords?.slice(0, 3).join(' ') || ''
 
-    if (imageUrl) {
+    console.log(
+      `[ContentProcessor] imageKeywords: "${imageKeywords}", PIXABAY_API_KEY set: ${!!process.env.PIXABAY_API_KEY}`,
+    )
+
+    if (imageKeywords && process.env.PIXABAY_API_KEY) {
       try {
-        featuredImageId = await this.downloadAndOptimizeImage(imageUrl, translatedData.title)
+        const pixabay = new PixabayService(this.payload)
+        featuredImageId = await pixabay.fetchAndUploadImage(imageKeywords, translatedData.title)
       } catch (error) {
-        console.warn(`[ContentProcessor] Failed to download image: ${error}`)
+        console.warn(`[ContentProcessor] Failed to fetch Pixabay image: ${error}`)
       }
     }
 
@@ -354,9 +377,7 @@ export class ContentProcessor {
   ): Promise<{ id: number | string }> {
     const lexicalContent = htmlToLexical(translatedData.content)
 
-    // Debug: Log the full Lexical structure
     console.log('[ContentProcessor] HTML content length:', translatedData.content.length)
-    console.log('[ContentProcessor] Lexical structure:', JSON.stringify(lexicalContent, null, 2))
 
     const baseSlug = generateSlug(translatedData.title)
     const existingSlugs = await this.getExistingSlugs()
@@ -408,13 +429,55 @@ export class ContentProcessor {
       )
     }
 
+    console.log('[ContentProcessor] Creating post with slug:', postData.slug)
+
     const post = await this.payload.create({
       collection: 'posts',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       data: postData as any,
       locale: 'hr',
+      depth: 0,
+      context: { disableRevalidate: true },
     })
 
     return { id: post.id }
+  }
+
+  /**
+   * Loads content style configuration from the ContentStyles global
+   */
+  private async loadContentStyle(styleKey: string): Promise<ContentStyleConfig | null> {
+    try {
+      const contentStyles = await this.payload.findGlobal({
+        slug: 'content-styles',
+      })
+
+      const styles = (contentStyles as unknown as Record<string, unknown>)?.styles as
+        | Array<{
+            key: string
+            prompt: string
+            maxTokens: number
+          }>
+        | undefined
+
+      if (!styles || styles.length === 0) return null
+
+      const style = styles.find((s) => s.key === styleKey)
+      if (!style) {
+        console.warn(
+          `[ContentProcessor] Content style "${styleKey}" not found, using default prompt`,
+        )
+        return null
+      }
+
+      return {
+        prompt: style.prompt,
+        maxTokens: style.maxTokens || 4096,
+      }
+    } catch (error) {
+      console.warn(`[ContentProcessor] Failed to load content style:`, error)
+      return null
+    }
   }
 
   /**

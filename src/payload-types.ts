@@ -125,6 +125,7 @@ export interface Config {
     settings: Setting;
     seo: Seo;
     'email-config': EmailConfig;
+    'content-styles': ContentStyle;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
@@ -132,6 +133,7 @@ export interface Config {
     settings: SettingsSelect<false> | SettingsSelect<true>;
     seo: SeoSelect<false> | SeoSelect<true>;
     'email-config': EmailConfigSelect<false> | EmailConfigSelect<true>;
+    'content-styles': ContentStylesSelect<false> | ContentStylesSelect<true>;
   };
   locale: 'en' | 'hr';
   user: User & {
@@ -1040,6 +1042,10 @@ export interface ImportedPost {
    */
   retryCount?: number | null;
   /**
+   * Odaberite stil prijevoda (postavke promptova: Settings → Stilovi sadržaja)
+   */
+  contentStyle?: ('short' | 'medium' | 'full') | null;
+  /**
    * Original article metadata (raw content, author, etc.)
    */
   metadata?:
@@ -1777,6 +1783,7 @@ export interface ImportedPostsSelect<T extends boolean = true> {
   translationTokens?: T;
   processedAt?: T;
   retryCount?: T;
+  contentStyle?: T;
   metadata?: T;
   lockedAt?: T;
   lockedBy?: T;
@@ -2362,6 +2369,10 @@ export interface EmailConfig {
   };
   templates?: {
     /**
+     * Variables: {{postTitle}}, {{authorName}}
+     */
+    newCommentAdminSubject?: string | null;
+    /**
      * Variables: {{postTitle}}, {{authorName}}, {{commentContent}}, {{adminUrl}}
      */
     newCommentAdmin?: {
@@ -2379,6 +2390,10 @@ export interface EmailConfig {
       };
       [k: string]: unknown;
     } | null;
+    /**
+     * Variables: {{authorName}}, {{postTitle}}
+     */
+    commentApprovedSubject?: string | null;
     /**
      * Variables: {{authorName}}, {{postTitle}}, {{postUrl}}
      */
@@ -2398,6 +2413,10 @@ export interface EmailConfig {
       [k: string]: unknown;
     } | null;
     /**
+     * Variables: {{authorName}}, {{replyAuthor}}, {{postTitle}}
+     */
+    commentReplySubject?: string | null;
+    /**
      * Variables: {{authorName}}, {{replyAuthor}}, {{postTitle}}, {{postUrl}}
      */
     commentReply?: {
@@ -2416,6 +2435,10 @@ export interface EmailConfig {
       [k: string]: unknown;
     } | null;
     /**
+     * Variables: {{postTitle}}
+     */
+    newPostSubscriberSubject?: string | null;
+    /**
      * Variables: {{postTitle}}, {{postExcerpt}}, {{postUrl}}, {{unsubscribeUrl}}
      */
     newPostSubscriber?: {
@@ -2433,6 +2456,10 @@ export interface EmailConfig {
       };
       [k: string]: unknown;
     } | null;
+    /**
+     * Variables: {{confirmUrl}}
+     */
+    subscribeConfirmationSubject?: string | null;
     /**
      * Variables: {{confirmUrl}}, {{unsubscribeUrl}}
      */
@@ -2454,7 +2481,33 @@ export interface EmailConfig {
     /**
      * Variables: {{resetUrl}}, {{userName}}
      */
+    passwordResetSubject?: string | null;
+    /**
+     * Variables: {{resetUrl}}, {{userName}}
+     */
     passwordReset?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    /**
+     * Variables: {{loginUrl}}, {{email}}, {{expiresIn}}
+     */
+    magicLinkSubject?: string | null;
+    /**
+     * Variables: {{loginUrl}}, {{email}}, {{expiresIn}}
+     */
+    magicLink?: {
       root: {
         type: string;
         children: {
@@ -2474,6 +2527,47 @@ export interface EmailConfig {
    * Email address for sending test emails
    */
   testEmail?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "content-styles".
+ */
+export interface ContentStyle {
+  id: number;
+  /**
+   * Definirajte stilove za kreiranje prevedenog sadržaja iz RSS feedova
+   */
+  styles?:
+    | {
+        /**
+         * Npr. "Kratki sažetak", "Srednji članak", "Opširni članak"
+         */
+        name: string;
+        /**
+         * Jedinstveni identifikator (npr. "short", "medium", "full")
+         */
+        key: string;
+        /**
+         * Kratki opis stila za prikaz u admin sučelju
+         */
+        description?: string | null;
+        /**
+         * Upute za AI pri kreiranju sadržaja. Koristite {title} i {content} kao placeholdere.
+         */
+        prompt: string;
+        /**
+         * Maksimalan broj tokena za AI odgovor
+         */
+        maxTokens?: number | null;
+        /**
+         * Koristi ovaj stil kao zadani za nove importe
+         */
+        isDefault?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -2674,14 +2768,42 @@ export interface EmailConfigSelect<T extends boolean = true> {
   templates?:
     | T
     | {
+        newCommentAdminSubject?: T;
         newCommentAdmin?: T;
+        commentApprovedSubject?: T;
         commentApproved?: T;
+        commentReplySubject?: T;
         commentReply?: T;
+        newPostSubscriberSubject?: T;
         newPostSubscriber?: T;
+        subscribeConfirmationSubject?: T;
         subscribeConfirmation?: T;
+        passwordResetSubject?: T;
         passwordReset?: T;
+        magicLinkSubject?: T;
+        magicLink?: T;
       };
   testEmail?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "content-styles_select".
+ */
+export interface ContentStylesSelect<T extends boolean = true> {
+  styles?:
+    | T
+    | {
+        name?: T;
+        key?: T;
+        description?: T;
+        prompt?: T;
+        maxTokens?: T;
+        isDefault?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

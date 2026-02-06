@@ -1,93 +1,174 @@
 # Magazin CMS
 
-Content Management System izgrađen s [Payload CMS](https://payloadcms.com) i [Next.js](https://nextjs.org). Dizajniran za upravljanje blog/magazin web stranicama s naprednim funkcionalnostima.
+Content Management System izgrađen s [Payload CMS 3.x](https://payloadcms.com) i [Next.js 15](https://nextjs.org). Dizajniran za upravljanje blog/magazin web stranicama s naprednim funkcionalnostima.
 
 ## Značajke
 
-- **Višejezičnost**: Podrška za English i Hrvatski
-- **Blog/Magazin**: Posts, Pages, Categories, Tags
-- **Komentari**: Nested comments s moderacijom i email notifikacijama
-- **Newsletter**: Subscriber management s double opt-in
-- **SEO**: Kompletna SEO kontrola za svaki sadržaj
-- **Media Library**: Upload s automatskim thumbnail generiranjem
-- **Email**: SMTP i Resend podrška s fallback mehanizmom
-- **Scheduled Publishing**: Automatsko objavljivanje u zadano vrijeme
-- **Version Control**: Drafts, autosave, version history
-- **RBAC**: Admin, Editor, Author, Subscriber uloge
-- **RSS Auto-Poster**: Automatski import i prijevod članaka s RSS feedova
+### Sadržaj
+- **Blog/Magazin** — Posts, Pages, Categories, Tags
+- **Višejezičnost** — Podrška za English i Hrvatski (i18n)
+- **Rich Text Editor** — Lexical editor s blokovima, tablicama, kodom
+- **Version Control** — Drafts, autosave, version history
+- **Scheduled Publishing** — Automatsko objavljivanje u zadano vrijeme
+- **Media Library** — Upload s automatskim thumbnail generiranjem (6 veličina)
+
+### Korisnici & Autentikacija
+- **RBAC** — Admin, Editor, Author, Subscriber uloge
+- **Magic Link Login** — Passwordless prijava za frontend korisnike
+- **Member Auth** — Frontend korisnički računi s profilom
+
+### Komunikacija
+- **Komentari** — Nested comments s moderacijom i email notifikacijama
+- **Newsletter** — Subscriber management s double opt-in
+- **Email Templates** — Konfigurirajte sve email poruke iz admin panela
+- **Email Provideri** — SMTP i Resend s fallback mehanizmom (DB config > env vars)
+
+### SEO & Analitika
+- **SEO** — Meta tagovi, Open Graph, structured data za svaki sadržaj
+- **Sitemap** — Automatski generiran XML sitemap
+- **Google Analytics** — Integracija s GA4
+- **View Counter** — Praćenje pregleda postova
+
+### Automatizacija
+- **RSS Auto-Poster** — Import, AI prijevod i objavljivanje članaka s RSS feedova
+- **Content Styles** — Konfigurirajte stil prijevoda (kratki, srednji, opširni)
+- **Pixabay Integration** — Automatski pronađi stock slike za importirane članke
+- **Cron Jobs** — Scheduled publishing, draft cleanup, RSS polling
 
 ## Tech Stack
 
-- **Backend**: Payload CMS 3.x
-- **Frontend**: Next.js 15 (App Router)
-- **Database**: PostgreSQL
-- **Styling**: TailwindCSS
-- **UI Components**: shadcn/ui
+| Komponenta | Tehnologija |
+|------------|-------------|
+| **CMS** | Payload CMS 3.x |
+| **Frontend** | Next.js 15 (App Router) |
+| **Database** | PostgreSQL 14+ |
+| **Styling** | TailwindCSS |
+| **UI Components** | shadcn/ui |
+| **AI Translation** | Claude API (Anthropic) |
+| **Stock Images** | Pixabay API |
+| **Email** | SMTP / Resend |
+| **Process Manager** | PM2 |
 
-## Quick Start
+## Instalacija
 
 ### Preduvjeti
 
-- Node.js 18+
+- Node.js 20+
 - PostgreSQL 14+
 - npm ili pnpm
 
-### Instalacija
+### Quick Start
 
 ```bash
-# Kloniraj repozitorij
-git clone <repository-url>
+git clone https://github.com/zaja/magazin-cms.git
 cd magazin-cms
-
-# Kopiraj environment varijable
-cp .env.example .env
-
-# Uredi .env s pravim vrijednostima
-nano .env
-
-# Instaliraj dependencies
 npm install
-
-# Kreiraj database migraciju
-npx payload migrate:create
-
-# Pokreni migraciju
-npx payload migrate
-
-# Pokreni development server
+npm run setup
 npm run dev
 ```
 
-Otvori `http://localhost:3000/admin` i kreiraj admin korisnika.
+Setup wizard automatski:
+1. Generira `.env` s auto-generiranim secretima (`PAYLOAD_SECRET`, `CRON_SECRET`, `PREVIEW_SECRET`)
+2. Pita za `DATABASE_URL` i `NEXT_PUBLIC_SERVER_URL`
+3. Opcionalno pita za Claude i Pixabay API ključeve
+4. Pokreće database migracije
+5. Seeda default email templateove i content stilove
+
+Otvori `http://localhost:3000/admin` i kreiraj prvog admin korisnika.
+
+### Ručna instalacija
+
+Ako preferirate ručni setup:
+
+```bash
+cp .env.example .env
+# Uredite .env s pravim vrijednostima
+npm install
+npx payload migrate
+npm run seed    # Opcionalno: seeda email templateove i content stilove
+npm run dev
+```
+
+## NPM Scripts
+
+| Script | Opis |
+|--------|------|
+| `npm run dev` | Pokreni development server |
+| `npm run build` | Build za production |
+| `npm run start` | Start production server |
+| `npm run setup` | Interaktivni setup wizard |
+| `npm run seed` | Seeda default email templateove i content stilove |
+| `npm run rss:poll` | Poll RSS feedove za nove članke |
+| `npm run rss:process` | Procesiraj pending RSS importe |
+| `npm run rss:test-feed` | Testiraj RSS feed URL |
+| `npm run rss:reprocess-failed` | Reprocessiraj failed importe |
+| `npm run rss:cleanup` | Očisti stare importe |
 
 ## Struktura projekta
 
 ```
 src/
 ├── app/
-│   ├── (frontend)/          # Frontend routes
-│   │   └── api/             # REST API endpoints
-│   └── (payload)/           # Admin panel
-├── collections/             # Payload collections
-│   ├── Posts/               # Blog posts
-│   ├── Pages/               # Static pages
-│   ├── Categories.ts        # Hierarchical categories
-│   ├── Tags.ts              # Post tags
-│   ├── Comments.ts          # Comment system
-│   ├── Media.ts             # Media library
-│   ├── Users/               # User management
-│   └── Subscribers.ts       # Newsletter subscribers
-├── globals/                 # Global settings
-│   ├── Settings.ts          # Site settings
-│   ├── SEO.ts               # Default SEO
-│   └── EmailConfig.ts       # Email configuration
-├── hooks/                   # Payload hooks
-│   └── emailNotifications.ts
-├── utilities/               # Helper utilities
-│   └── emailService.ts      # Email service (SMTP/Resend)
-└── translations/            # i18n translations
+│   ├── (frontend)/              # Frontend routes & API
+│   │   ├── api/
+│   │   │   ├── auth/            # Magic link, session, profile
+│   │   │   ├── cron/            # Scheduled tasks
+│   │   │   ├── frontend/        # Public API (posts, comments, tags)
+│   │   │   ├── subscribe/       # Newsletter subscription
+│   │   │   └── search/          # Search endpoint
+│   │   ├── posts/               # Blog pages
+│   │   ├── category/            # Category pages
+│   │   ├── tags/                # Tag pages
+│   │   ├── account/             # Member account pages
+│   │   └── subscribe/           # Subscribe page
+│   └── (payload)/               # Admin panel
+├── collections/                 # Payload collections
+│   ├── Posts/                   # Blog posts (versioned, localized)
+│   ├── Pages/                   # Static pages (versioned, localized)
+│   ├── Categories.ts            # Hierarchical categories
+│   ├── Tags.ts                  # Post tags
+│   ├── Comments.ts              # Nested comments with moderation
+│   ├── Media.ts                 # Media library (6 image sizes)
+│   ├── Users/                   # Users with RBAC
+│   ├── Subscribers.ts           # Newsletter subscribers
+│   ├── RSSFeeds.ts              # RSS feed sources
+│   └── ImportedPosts.ts         # RSS import queue
+├── globals/                     # Global settings
+│   ├── Settings.ts              # Site settings, language, timezone
+│   ├── SEO.ts                   # Default SEO, structured data, sitemap
+│   ├── EmailConfig.ts           # Email provider + 7 email templates
+│   └── ContentStyles.ts         # AI translation style presets
+├── services/                    # Business logic
+│   ├── ClaudeTranslator.ts      # AI translation service
+│   ├── ContentProcessor.ts      # RSS content processing pipeline
+│   ├── PixabayService.ts        # Stock image search
+│   ├── RSSPoller.ts             # RSS feed polling
+│   ├── RateLimiter.ts           # Rate limiting for external APIs
+│   └── MonitoringService.ts     # System monitoring
+├── hooks/                       # Payload hooks
+│   ├── emailNotifications.ts    # All email notification hooks
+│   └── populatePublishedAt.ts   # Auto-set publish date
+├── utilities/                   # Helper utilities
+│   ├── emailService.ts          # Email service (SMTP/Resend + DB fallback)
+│   ├── memberAuth.ts            # Frontend member authentication
+│   ├── validateEnv.ts           # Environment variable validation
+│   └── ...
+├── jobs/                        # Cron job scripts
+│   ├── cron-poll-feeds.ts       # RSS poll cron
+│   └── cron-process-imports.ts  # RSS process cron
+└── translations/                # i18n
     ├── en.json
     └── hr.json
+
+scripts/
+├── setup.ts                     # Interactive setup wizard
+├── seed-defaults.ts             # Seed email templates + content styles
+├── test-rss-feed.ts             # Test RSS feed URL
+├── reprocess-failed.ts          # Reprocess failed RSS imports
+└── cleanup-old-imports.ts       # Clean up old RSS imports
+
+docs/
+└── RSS-AUTO-POSTER.md           # Detailed RSS auto-poster documentation
 ```
 
 ## Collections
@@ -95,75 +176,130 @@ src/
 | Collection | Opis |
 |------------|------|
 | **Users** | Korisnici s ulogama: Admin, Editor, Author, Subscriber |
-| **Posts** | Blog postovi s SEO, categories, tags, comments |
-| **Pages** | Statične stranice s layout builder |
-| **Categories** | Hijerarhijske kategorije |
+| **Posts** | Blog postovi s SEO, categories, tags, versioning, localization |
+| **Pages** | Statične stranice s layout builder (Hero, CTA, Content, Archive blokovi) |
+| **Categories** | Hijerarhijske kategorije s breadcrumbs |
 | **Tags** | Tagovi za organizaciju sadržaja |
-| **Comments** | Nested komentari s moderacijom |
-| **Media** | Slike, videi, dokumenti |
-| **Subscribers** | Newsletter pretplatnici |
+| **Comments** | Nested komentari s moderacijom (pending/approved/spam/deleted) |
+| **Media** | Slike, videi, dokumenti s automatskim resize-om |
+| **Subscribers** | Newsletter pretplatnici s double opt-in |
 | **RSSFeeds** | RSS feed sources za auto-import |
-| **ImportedPosts** | Queue importiranih članaka |
+| **ImportedPosts** | Queue importiranih članaka s statusom procesiranja |
 
 ## Globals
 
 | Global | Opis |
 |--------|------|
-| **Settings** | Naziv stranice, logo, favicon, maintenance mode |
-| **SEO** | Default meta tags, structured data, sitemap |
-| **EmailConfig** | SMTP/Resend konfiguracija, email templates |
+| **Settings** | Naziv stranice, logo, favicon, jezik, timezone, maintenance mode |
+| **SEO** | Default meta tags, structured data, sitemap konfiguracija, social links |
+| **EmailConfig** | SMTP/Resend provider + 7 email templateova (Lexical rich text) |
+| **ContentStyles** | AI prijevod stilovi (kratki, srednji, opširni) s custom promptima |
+| **Header** | Navigacija s mega-menu podrškom |
+| **Footer** | Footer kolone, social linkovi |
 
 ## API Endpoints
 
+### Frontend API
+
 | Endpoint | Method | Opis |
 |----------|--------|------|
-| `/api/posts` | GET | Lista postova (pagination, filters) |
-| `/api/posts/:slug` | GET | Pojedinačni post |
-| `/api/comments` | GET | Komentari za post |
-| `/api/comments` | POST | Submit komentar |
+| `/api/frontend/posts` | GET | Lista postova (pagination, filters) |
+| `/api/frontend/posts/:slug` | GET | Pojedinačni post |
+| `/api/frontend/posts/view` | POST | Inkrementiraj view counter |
+| `/api/frontend/pages/:slug` | GET | Pojedinačna stranica |
+| `/api/frontend/comments` | GET/POST | Komentari za post |
+| `/api/frontend/tags` | GET | Lista tagova |
+| `/api/search` | GET | Pretraživanje sadržaja |
+
+### Newsletter
+
+| Endpoint | Method | Opis |
+|----------|--------|------|
 | `/api/subscribe` | POST | Subscribe na newsletter |
-| `/api/confirm-subscription` | GET | Potvrdi subscription |
+| `/api/confirm-subscription` | GET | Potvrdi subscription (double opt-in) |
 | `/api/unsubscribe` | GET | Unsubscribe |
-| `/api/cron/publish-scheduled` | GET | Publish scheduled posts (cron) |
-| `/api/cron/cleanup-drafts` | GET | Cleanup old drafts (cron) |
-| `/api/rss-feeds/:id/trigger-poll` | POST | Ručno pokreni RSS poll |
-| `/api/rss-feeds/process-single` | POST | Procesiraj pojedinačni import |
+
+### Autentikacija
+
+| Endpoint | Method | Opis |
+|----------|--------|------|
+| `/api/auth/magic-link` | POST | Pošalji magic link za login |
+| `/api/auth/verify` | GET | Verificiraj magic link token |
+| `/api/auth/session` | GET | Provjeri korisničku sesiju |
+| `/api/auth/update-profile` | POST | Ažuriraj profil |
+| `/api/auth/logout` | POST | Odjava |
+
+### Cron Jobs
+
+| Endpoint | Method | Opis |
+|----------|--------|------|
+| `/api/cron/publish-scheduled` | GET | Objavi zakazane postove |
+| `/api/cron/cleanup-drafts` | GET | Očisti stare draftove |
 
 ## Access Control
 
 | Uloga | Permissions |
 |-------|-------------|
-| **Admin** | Full access - sve kolekcije i postavke |
-| **Editor** | Može upravljati svim sadržajem osim korisnika |
-| **Author** | Može upravljati samo svojim postovima |
-| **Subscriber** | Read-only pristup |
+| **Admin** | Full access — sve kolekcije, postavke, korisnici |
+| **Editor** | Može upravljati svim sadržajem osim korisnika i postavki |
+| **Author** | Može kreirati i upravljati samo svojim postovima |
+| **Subscriber** | Read-only pristup frontend sadržaju |
 
-## Production
+## Email Templates
 
-### Build
+Setup wizard seeda 7 email templateova koji se mogu urediti u admin panelu (Settings > Email Config):
+
+| Template | Opis |
+|----------|------|
+| **Novi komentar (admin)** | Obavijest adminu o novom komentaru |
+| **Komentar odobren** | Obavijest autoru da je komentar odobren |
+| **Odgovor na komentar** | Obavijest o odgovoru na komentar |
+| **Novi post (pretplatnici)** | Obavijest pretplatnicima o novom postu |
+| **Potvrda pretplate** | Double opt-in email za newsletter |
+| **Magic link login** | Passwordless login email |
+| **Reset lozinke** | Email za resetiranje lozinke |
+
+Templateovi koriste varijable poput `{{postTitle}}`, `{{authorName}}`, `{{magicLink}}` itd.
+
+## RSS Auto-Poster
+
+Sustav za automatski import, AI prijevod i objavljivanje članaka s vanjskih RSS feedova.
+
+### Značajke
+
+- **Automatski import** novih članaka s RSS feedova
+- **AI prijevod** s engleskog na hrvatski (Claude AI)
+- **Content Styles** — odaberite stil prijevoda po feedu (kratki, srednji, opširni)
+- **SEO optimizacija** — automatski generira meta tagove i ključne riječi
+- **Pixabay slike** — automatski pronađi relevantnu stock sliku
+- **Deduplication** — sprječava duplicate importe
+- **Media handling** — automatski download i optimizacija slika
+- **Rate limiting** — poštuje ograničenja vanjskih servisa
+- **Admin UI** — ručno pokretanje poll/process iz admin panela
+
+### Workflow
+
+1. **Poll** — `npm run rss:poll` dohvaća nove članke i sprema ih u `ImportedPosts` (status: `pending`)
+2. **Process** — `npm run rss:process` prevodi s Claude AI, downloada slike, kreira draft postove
+3. **Review** — Urednik pregledava draft postove u admin panelu i objavljuje ih
+
+Više detalja: [docs/RSS-AUTO-POSTER.md](docs/RSS-AUTO-POSTER.md)
+
+## Production Deployment
+
+### Build & Start
 
 ```bash
-# Build za production
 npm run build
-
-# Start production server
 npm run start
 ```
 
 ### PM2 (preporučeno)
 
 ```bash
-# Start s PM2
 pm2 start ecosystem.config.cjs
-
-# Restart
 pm2 restart magazin-cms
-
-# Logs
 pm2 logs magazin-cms
-
-# Status
-pm2 status
 ```
 
 ### Cron Jobs
@@ -172,132 +308,60 @@ Dodaj u crontab (`crontab -e`):
 
 ```bash
 # Publish scheduled posts (svake minute)
-* * * * * curl -H "Authorization: Bearer YOUR_CRON_SECRET" http://localhost:3000/api/cron/publish-scheduled
+* * * * * curl -s -H "Authorization: Bearer YOUR_CRON_SECRET" http://localhost:3000/api/cron/publish-scheduled
 
 # Cleanup old drafts (dnevno u 2am)
-0 2 * * * curl -H "Authorization: Bearer YOUR_CRON_SECRET" http://localhost:3000/api/cron/cleanup-drafts
+0 2 * * * curl -s -H "Authorization: Bearer YOUR_CRON_SECRET" http://localhost:3000/api/cron/cleanup-drafts
 
-crontab -e
-# Dodaj:
-*/30 * * * * cd /home/zaja/magazin-cms && npm run rss:poll >> /var/log/rss-poll.log 2>&1
-*/5 * * * * cd /home/zaja/magazin-cms && npm run rss:process >> /var/log/rss-process.log 2>&1
+# RSS poll (svakih 30 min) — opcionalno
+*/30 * * * * cd /path/to/magazin-cms && npm run rss:poll >> /var/log/rss-poll.log 2>&1
+
+# RSS process (svakih 5 min) — opcionalno
+*/5 * * * * cd /path/to/magazin-cms && npm run rss:process >> /var/log/rss-process.log 2>&1
 ```
 
-## RSS Auto-Poster
+### Migracije
 
-Sustav za automatski import, prijevod i objavljivanje članaka s vanjskih RSS feedova.
-
-### Značajke
-
-- **Automatski import** novih članaka s RSS feedova
-- **AI prijevod** s engleskog na hrvatski (Claude AI)
-- **SEO optimizacija** - automatski generira meta tagove i ključne riječi
-- **Deduplication** - sprječava duplicate importe
-- **Media handling** - automatski download i optimizacija slika
-- **Rate limiting** - poštuje ograničenja vanjskih servisa
-- **Admin UI** - ručno pokretanje poll/process iz admin panela
-
-### NPM Scripts
+Schema se upravlja migracijama (`push: false`). Za nove migracije:
 
 ```bash
-# Poll sve aktivne feedove za nove članke
-npm run rss:poll
-
-# Procesiraj pending importe (prijevod + kreiranje posta)
-npm run rss:process
-
-# Testiraj RSS feed URL
-npm run rss:test-feed -- <feed-url>
-
-# Reprocessiraj failed importe
-npm run rss:reprocess-failed
-
-# Očisti stare importe (default: 30 dana)
-npm run rss:cleanup
-```
-
-### Workflow
-
-1. **Poll** - `rss:poll` dohvaća nove članke iz RSS feedova i sprema ih u `ImportedPosts` sa statusom `pending`
-2. **Process** - `rss:process` uzima pending importe, prevodi ih s Claude AI, downloada slike i kreira draft postove
-3. **Review** - Urednik pregledava draft postove u admin panelu i objavljuje ih
-
-### Konfiguracija
-
-Dodaj u `.env`:
-
-```bash
-# Claude AI API key (obavezno za prijevod)
-CLAUDE_API_KEY=sk-ant-api03-xxx
-
-# Opcionalno - rate limiting
-RSS_MAX_CONCURRENT=2
-RSS_RATE_LIMIT_DELAY_MS=2000
-RSS_BATCH_SIZE=5
-```
-
-### Admin UI
-
-- **RSSFeeds** collection - dodaj/uredi feedove, ručno pokreni poll
-- **ImportedPosts** collection - pregledaj queue, ručno procesiraj pojedinačne importe
-
-Više detalja: `docs/RSS-AUTO-POSTER.md`
-
-## Development Tips
-
-### Push Mode (Development)
-
-U development mode-u, `push: true` je uključen u `payload.config.ts`. To znači da se schema automatski sinkronizira s bazom bez potrebe za eksplicitnim migracijama.
-
-### Migracije (Production)
-
-Za production deployment:
-
-```bash
-# Kreiraj migraciju
-NODE_ENV=production npx payload migrate:create
-
-# Pokreni migraciju
-NODE_ENV=production npx payload migrate
-```
-
-### Database Reset (Development)
-
-Ako migracija zapne:
-
-```bash
-PGPASSWORD=your_password psql -U payload_user -h 127.0.0.1 -d payload_cms_db -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO payload_user;"
-rm src/migrations/*.ts src/migrations/*.json
-npx payload migrate:create && npx payload migrate
-npm run build
+npx payload migrate:create
+npx payload migrate
 ```
 
 ## Environment Variables
 
-Vidi `.env.example` za sve potrebne varijable.
+Setup wizard (`npm run setup`) automatski generira `.env`. Vidi `.env.example` za sve varijable.
+
+### Obavezne
 
 | Varijabla | Opis |
 |-----------|------|
 | `DATABASE_URL` | PostgreSQL connection string |
-| `PAYLOAD_SECRET` | JWT encryption secret (min 32 chars) |
+| `PAYLOAD_SECRET` | JWT encryption secret (auto-generirano) |
 | `NEXT_PUBLIC_SERVER_URL` | Public URL (bez trailing slash) |
-| `CRON_SECRET` | Secret za cron job authentication |
-| `RESEND_API_KEY` | Resend API key (optional) |
-| `SMTP_*` | SMTP konfiguracija (optional) |
+| `CRON_SECRET` | Secret za cron job authentication (auto-generirano) |
+| `PREVIEW_SECRET` | Secret za live preview (auto-generirano) |
+
+### Opcionalne
+
+| Varijabla | Opis |
+|-----------|------|
 | `CLAUDE_API_KEY` | Anthropic Claude API key za RSS prijevod |
+| `PIXABAY_API_KEY` | Pixabay API key za stock slike |
+| `RESEND_API_KEY` | Resend API key (fallback za email) |
+| `SMTP_*` | SMTP konfiguracija (fallback za email) |
+| `RSS_*` | RSS auto-poster tuning (vidi `.env.example`) |
+
+> **Napomena**: Email konfiguracija se primarno postavlja u admin panelu (Settings > Email Config). Environment varijable služe kao fallback.
 
 ## Troubleshooting
 
 ### Server se ne pokreće
 
 ```bash
-# Provjeri PM2 status
 pm2 status
-
-# Provjeri logs
 pm2 logs magazin-cms
-
-# Rebuild
 npm run build && pm2 restart magazin-cms
 ```
 
@@ -307,9 +371,33 @@ npm run build && pm2 restart magazin-cms
 # Provjeri PostgreSQL
 sudo systemctl status postgresql
 
-# Provjeri connection
-psql -U payload_user -h 127.0.0.1 -d payload_cms_db
+# Testiraj konekciju
+psql -h 127.0.0.1 -U your_user -d your_database
 ```
+
+### Email se ne šalje
+
+1. Provjeri konfiguraciju u admin panelu: Settings > Email Config
+2. Testiraj slanje: Admin Panel > Email Config > Test Email
+3. Ako nema DB config, provjeri `SMTP_*` ili `RESEND_*` u `.env`
+
+### RSS import ne radi
+
+1. Provjeri `CLAUDE_API_KEY` u `.env`
+2. Testiraj feed: `npm run rss:test-feed -- <feed-url>`
+3. Provjeri logs: `pm2 logs magazin-cms`
+4. Vidi [docs/RSS-AUTO-POSTER.md](docs/RSS-AUTO-POSTER.md) za detalje
+
+## Dokumentacija
+
+| Dokument | Opis |
+|----------|------|
+| [README.md](README.md) | Ovaj dokument — pregled projekta i instalacija |
+| [ADMIN_GUIDE.md](ADMIN_GUIDE.md) | Vodič za administratore — korištenje admin panela |
+| [DEPLOYMENT.md](DEPLOYMENT.md) | Production deployment upute |
+| [API_REFERENCE.md](API_REFERENCE.md) | API dokumentacija |
+| [docs/RSS-AUTO-POSTER.md](docs/RSS-AUTO-POSTER.md) | RSS auto-poster dokumentacija |
+| [.env.example](.env.example) | Sve environment varijable s opisima |
 
 ## License
 

@@ -27,5 +27,34 @@ logs/
 
 # IDE
 .idea/
+.cursor/
+.vscode/
 *.swp
 *.swo
+
+# Development prompts & notes
+AGENTS.md
+payload_setup_prompt.md
+rss_autoposter_system.md
+
+# HTML mockup (not part of CMS)
+magazin-html/
+
+# Payload starter template demo seed
+src/endpoints/seed/
+
+# Legacy/unused scripts
+scripts/seed-content-styles.ts
+scripts/reset-bad-posts.ts
+
+# Backup files
+*.bak
+
+# Test env
+test.env
+
+# npm lockfile (project uses pnpm)
+package-lock.json
+
+# Payload template assets
+public/website-template-OG.webp

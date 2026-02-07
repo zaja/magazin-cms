@@ -134,6 +134,14 @@ export default buildConfig({
         return authHeader === `Bearer ${secret}`
       },
     },
+    jobsCollectionOverrides: ({ defaultJobsCollection }) => ({
+      ...defaultJobsCollection,
+      admin: {
+        ...defaultJobsCollection.admin,
+        hidden: false,
+        group: 'System',
+      },
+    }),
     autoRun: [
       {
         cron: '*/5 * * * *',

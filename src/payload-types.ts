@@ -2612,6 +2612,50 @@ export interface EmailConfig {
       };
       [k: string]: unknown;
     } | null;
+    /**
+     * Variables: {{postCount}}
+     */
+    weeklyDigestSubject?: string | null;
+    /**
+     * Header tekst iznad liste postova. Variables: {{postCount}}, {{postList}}, {{siteUrl}}, {{preferencesUrl}}, {{unsubscribeUrl}}
+     */
+    weeklyDigest?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    /**
+     * Variables: {{postCount}}, {{firstPostTitle}}
+     */
+    postNotificationBatchSubject?: string | null;
+    /**
+     * Header tekst iznad liste postova. Variables: {{postCount}}, {{postList}}, {{preferencesUrl}}, {{unsubscribeUrl}}
+     */
+    postNotificationBatch?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
   };
   /**
    * Email address for sending test emails
@@ -2890,6 +2934,10 @@ export interface EmailConfigSelect<T extends boolean = true> {
         passwordReset?: T;
         magicLinkSubject?: T;
         magicLink?: T;
+        weeklyDigestSubject?: T;
+        weeklyDigest?: T;
+        postNotificationBatchSubject?: T;
+        postNotificationBatch?: T;
       };
   testEmail?: T;
   updatedAt?: T;

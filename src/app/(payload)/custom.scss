@@ -1,0 +1,47 @@
+/* Sidebar nav items — larger font */
+.nav-group .nav-group__content .nav__link {
+  font-size: 14px;
+}
+
+/* Sidebar group labels */
+.nav-group .nav-group__toggle {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Collection sidebar icons via CSS */
+.nav__link::before {
+  display: inline-block;
+  width: 20px;
+  margin-right: 6px;
+  text-align: center;
+  font-size: 15px;
+  opacity: 0.7;
+}
+
+/* Content group */
+.nav__link[href$="/collections/posts"]::before { content: "✏️"; }
+.nav__link[href$="/collections/pages"]::before { content: "📄"; }
+.nav__link[href$="/collections/media"]::before { content: "🖼️"; }
+.nav__link[href$="/collections/categories"]::before { content: "📁"; }
+.nav__link[href$="/collections/tags"]::before { content: "🏷️"; }
+.nav__link[href$="/collections/comments"]::before { content: "💬"; }
+.nav__link[href$="/collections/subscribers"]::before { content: "📧"; }
+.nav__link[href$="/collections/newsletters"]::before { content: "📨"; }
+
+/* Automation group */
+.nav__link[href$="/collections/rss-feeds"]::before { content: "📡"; }
+.nav__link[href$="/collections/imported-posts"]::before { content: "☁️"; }
+
+/* System group */
+.nav__link[href$="/collections/users"]::before { content: "👥"; }
+.nav__link[href$="/collections/payload-jobs"]::before { content: "⚙️"; }
+
+/* Globals */
+.nav__link[href$="/globals/header"]::before { content: "🔝"; }
+.nav__link[href$="/globals/footer"]::before { content: "🔻"; }
+.nav__link[href$="/globals/settings"]::before { content: "⚙️"; }
+.nav__link[href$="/globals/seo"]::before { content: "🔍"; }
+.nav__link[href$="/globals/email-config"]::before { content: "📬"; }
+.nav__link[href$="/globals/content-styles"]::before { content: "🎨"; }

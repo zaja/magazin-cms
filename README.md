@@ -185,6 +185,7 @@ docs/
 | **Subscribers** | Newsletter pretplatnici s double opt-in |
 | **RSSFeeds** | RSS feed sources za auto-import |
 | **ImportedPosts** | Queue importiranih članaka s statusom procesiranja |
+| **Newsletters** | Ručni newsletteri s rich text editorom i audience odabirom |
 
 ## Globals
 
@@ -244,6 +245,56 @@ docs/
 | **Editor** | Može upravljati svim sadržajem osim korisnika i postavki |
 | **Author** | Može kreirati i upravljati samo svojim postovima |
 | **Subscriber** | Read-only pristup frontend sadržaju |
+
+## Sustav obavještavanja
+
+Koristi **Payload Jobs Queue** za pouzdano, throttled slanje emailova.
+
+### Tipovi obavijesti
+
+| Tip | Opis | Frekvencija |
+|-----|-------|-------------|
+| **Instant obavijesti** | Batched email o novim postovima | Max 1x / 2 sata |
+| **Tjedni digest** | Pregled svih postova iz tjedna | Ponedjeljak 8:00 (auto-scheduled) |
+| **Ručni newsletter** | Admin piše i šalje kampanju | Ručno iz admin panela |
+| **Komentar obavijesti** | Odgovor na komentar, odobrenje | Odmah |
+
+### Kako radi
+
+1. **Post objavljen** → hook kreira job `sendPostNotificationBatch` s `waitUntil: +2h`
+2. **Payload Jobs runner** (autoRun svakih 5 min) provjerava queue
+3. **Job handler** skupi sve neobaviještene postove i šalje **jedan email** po pretplatniku
+   - 1 post → normalan email
+   - 3+ postova → digest-style lista
+
+### Pretplatničke preference
+
+Svaki pretplatnik bira što želi primati:
+
+| Preference | Default | Opis |
+|-----------|---------|------|
+| `newPosts` | `false` | Instant obavijesti o novim postovima (throttled) |
+| `weeklyDigest` | `true` | Tjedni pregled svih novih postova |
+| `newsletter` | `true` | Ručni newsletteri od urednika |
+| `commentReplies` | `true` | Obavijesti o odgovorima na komentare |
+
+### Ručni newsletter
+
+1. Admin panel → **Newsletters** → Kreiraj novi
+2. Napiši naslov i sadržaj (Lexical rich text editor)
+3. Odaberi publiku (svi, newsletter pretplatnici, digest pretplatnici)
+4. Klikni **"Pošalji newsletter"**
+5. Job se kreira u queue i šalje u batchevima od 50 emailova
+
+### Payload Jobs
+
+| Task | Opis | Retry |
+|------|------|-------|
+| `sendPostNotificationBatch` | Batched obavijesti o novim postovima | 3x (exponential) |
+| `sendWeeklyDigest` | Tjedni digest (auto-scheduled: pon 8:00) | 2x (fixed 5min) |
+| `sendNewsletter` | Ručni newsletter | 3x (exponential) |
+
+Jobs se automatski procesiraju svakih 5 minuta (`autoRun`). Nema potrebe za vanjskim cronom za obavijesti.
 
 ## Email Templates
 

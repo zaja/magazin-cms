@@ -61,6 +61,16 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+    meta: {
+      titleSuffix: ' - Magazin CMS',
+      icons: [
+        {
+          rel: 'icon',
+          type: 'image/svg+xml',
+          url: '/favicon.svg',
+        },
+      ],
+    },
     user: Users.slug,
     livePreview: {
       breakpoints: [

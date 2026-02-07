@@ -26,12 +26,17 @@ import { FolderTableCell as FolderTableCell_ab83ff7e88da8d3530831f296ec4756a } f
 import { FolderField as FolderField_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
 import { TriggerPollButton as TriggerPollButton_4d419d7a356bc525389ac8c3ebc69e9f } from '../../../components/RSSFeeds/TriggerPollButton'
 import { ProcessImportButton as ProcessImportButton_bf206deb5069cf194ed9018e4fe0cd7b } from '../../../components/ImportedPosts/ProcessImportButton'
+import { default as default_2e35a85fcd7028e0a7eec4b52c259b91 } from '@/components/admin/NewsletterTagsInfo'
+import { AlignFeatureClient as AlignFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
+import { default as default_df1e46557ae9591cb2244d672a0b3228 } from '@/components/admin/SendNewsletterButton'
 import { LinkToDoc as LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
 import { ReindexButton as ReindexButton_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
 import { FolderTypeField as FolderTypeField_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
 import { RowLabel as RowLabel_ec255a65fa6fa8d1faeb09cf35284224 } from '@/Header/RowLabel'
 import { RowLabel as RowLabel_1f6ff6ff633e3695d348f4f3c58f1466 } from '@/Footer/RowLabel'
 import { default as default_99635bc14de407531576022cd79284db } from '@/components/admin/TestEmailButton'
+import { default as default_534076e2c753ea5d539a54b05f456b1b } from '@/components/admin/Icon'
+import { default as default_a44df17d0fc3dcd873dae43dc3bf66bd } from '@/components/admin/Logo'
 import { default as default_1a7510af427896d367a49dbf838d2de6 } from '@/components/BeforeDashboard'
 import { default as default_8a7ab0eb7ab5c511aba12e68480bfe5e } from '@/components/BeforeLogin'
 import { CollectionCards as CollectionCards_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
@@ -65,12 +70,17 @@ export const importMap = {
   "@payloadcms/ui/rsc#FolderField": FolderField_ab83ff7e88da8d3530831f296ec4756a,
   "/components/RSSFeeds/TriggerPollButton#TriggerPollButton": TriggerPollButton_4d419d7a356bc525389ac8c3ebc69e9f,
   "/components/ImportedPosts/ProcessImportButton#ProcessImportButton": ProcessImportButton_bf206deb5069cf194ed9018e4fe0cd7b,
+  "@/components/admin/NewsletterTagsInfo#default": default_2e35a85fcd7028e0a7eec4b52c259b91,
+  "@payloadcms/richtext-lexical/client#AlignFeatureClient": AlignFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
+  "@/components/admin/SendNewsletterButton#default": default_df1e46557ae9591cb2244d672a0b3228,
   "@payloadcms/plugin-search/client#LinkToDoc": LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634,
   "@payloadcms/plugin-search/client#ReindexButton": ReindexButton_aead06e4cbf6b2620c5c51c9ab283634,
   "@payloadcms/ui#FolderTypeField": FolderTypeField_3817bf644402e67bfe6577f60ef982de,
   "@/Header/RowLabel#RowLabel": RowLabel_ec255a65fa6fa8d1faeb09cf35284224,
   "@/Footer/RowLabel#RowLabel": RowLabel_1f6ff6ff633e3695d348f4f3c58f1466,
   "@/components/admin/TestEmailButton#default": default_99635bc14de407531576022cd79284db,
+  "@/components/admin/Icon#default": default_534076e2c753ea5d539a54b05f456b1b,
+  "@/components/admin/Logo#default": default_a44df17d0fc3dcd873dae43dc3bf66bd,
   "@/components/BeforeDashboard#default": default_1a7510af427896d367a49dbf838d2de6,
   "@/components/BeforeLogin#default": default_8a7ab0eb7ab5c511aba12e68480bfe5e,
   "@payloadcms/ui/rsc#CollectionCards": CollectionCards_ab83ff7e88da8d3530831f296ec4756a

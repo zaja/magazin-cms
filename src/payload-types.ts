@@ -1091,7 +1091,13 @@ export interface ImportedPost {
  */
 export interface Newsletter {
   id: number;
+  /**
+   * Možete koristiti: {{siteName}}, {{date}}, {{subscriberCount}}
+   */
   subject: string;
+  /**
+   * U tekstu možete koristiti tagove: {{subscriberName}}, {{unsubscribeUrl}}, {{preferencesUrl}}, {{siteName}}, {{siteUrl}}, {{date}}
+   */
   content: {
     root: {
       type: string;

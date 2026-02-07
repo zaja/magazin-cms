@@ -47,8 +47,20 @@ export const Subscribers: CollectionConfig = {
         {
           name: 'newPosts',
           type: 'checkbox',
+          defaultValue: false,
+          label: 'Instant Post Notifications',
+          admin: {
+            description: 'Receive batched email when new posts are published (max 1x per 2 hours)',
+          },
+        },
+        {
+          name: 'weeklyDigest',
+          type: 'checkbox',
           defaultValue: true,
-          label: 'New Posts Notifications',
+          label: 'Weekly Digest',
+          admin: {
+            description: 'Receive a weekly summary of all new posts (every Monday)',
+          },
         },
         {
           name: 'commentReplies',
@@ -60,7 +72,10 @@ export const Subscribers: CollectionConfig = {
           name: 'newsletter',
           type: 'checkbox',
           defaultValue: true,
-          label: 'Weekly Newsletter',
+          label: 'Newsletter',
+          admin: {
+            description: 'Receive manually sent newsletters from editors',
+          },
         },
       ],
     },

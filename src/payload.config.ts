@@ -16,6 +16,7 @@ import { Comments } from './collections/Comments'
 import { Subscribers } from './collections/Subscribers'
 import { RSSFeeds } from './collections/RSSFeeds'
 import { ImportedPosts } from './collections/ImportedPosts'
+import { Newsletters } from './collections/Newsletters'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
 import { Settings } from './globals/Settings'
@@ -107,6 +108,7 @@ export default buildConfig({
     Subscribers,
     RSSFeeds,
     ImportedPosts,
+    Newsletters,
   ],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer, Settings, SEO, EmailConfig, ContentStyles],
@@ -132,6 +134,106 @@ export default buildConfig({
         return authHeader === `Bearer ${secret}`
       },
     },
-    tasks: [],
+    autoRun: [
+      {
+        cron: '*/5 * * * *',
+        queue: 'notifications',
+        limit: 10,
+      },
+    ],
+    deleteJobOnComplete: true,
+    tasks: [
+      {
+        slug: 'sendPostNotificationBatch',
+        label: 'Send Post Notification Batch',
+        inputSchema: [
+          {
+            name: 'postId',
+            type: 'number',
+          },
+        ],
+        outputSchema: [
+          {
+            name: 'sent',
+            type: 'number',
+          },
+          {
+            name: 'posts',
+            type: 'number',
+          },
+        ],
+        handler: async (args) => {
+          const { sendPostNotificationBatch } = await import('./jobs/tasks/sendPostNotificationBatch')
+          return sendPostNotificationBatch(args as any)
+        },
+        retries: {
+          attempts: 3,
+          backoff: {
+            type: 'exponential',
+            delay: 60000,
+          },
+        },
+      },
+      {
+        slug: 'sendWeeklyDigest',
+        label: 'Send Weekly Digest',
+        inputSchema: [],
+        outputSchema: [
+          {
+            name: 'sent',
+            type: 'number',
+          },
+          {
+            name: 'posts',
+            type: 'number',
+          },
+        ],
+        handler: async (args) => {
+          const { sendWeeklyDigest } = await import('./jobs/tasks/sendWeeklyDigest')
+          return sendWeeklyDigest(args as any)
+        },
+        retries: {
+          attempts: 2,
+          backoff: {
+            type: 'fixed',
+            delay: 300000,
+          },
+        },
+        schedule: [
+          {
+            cron: '0 8 * * 1',
+            queue: 'notifications',
+          },
+        ],
+      },
+      {
+        slug: 'sendNewsletter',
+        label: 'Send Newsletter',
+        inputSchema: [
+          {
+            name: 'newsletterId',
+            type: 'number',
+            required: true,
+          },
+        ],
+        outputSchema: [
+          {
+            name: 'sent',
+            type: 'number',
+          },
+        ],
+        handler: async (args) => {
+          const { sendNewsletter } = await import('./jobs/tasks/sendNewsletter')
+          return sendNewsletter(args as any)
+        },
+        retries: {
+          attempts: 3,
+          backoff: {
+            type: 'exponential',
+            delay: 60000,
+          },
+        },
+      },
+    ],
   },
 })

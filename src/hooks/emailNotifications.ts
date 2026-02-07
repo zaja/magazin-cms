@@ -187,85 +187,28 @@ export const notifySubscribersOnNewPost: CollectionAfterChangeHook = async ({
   previousDoc,
   req,
 }) => {
-  // Only notify when post is published AND notification hasn't been sent yet
+  // Only queue notification when post is published for the first time
   const wasPublished = previousDoc?._status !== 'published' && doc._status === 'published'
   const alreadyNotified = doc.notificationSent === true
 
   if (!wasPublished || alreadyNotified) return doc
 
   try {
-    await emailService.initialize(req.payload)
+    // Queue a batched notification job with a 2-hour delay.
+    // The job handler will collect ALL un-notified posts and send
+    // a single email per subscriber (instead of one email per post).
+    const waitUntil = new Date(Date.now() + 2 * 60 * 60 * 1000) // +2 hours
 
-    // Get active subscribers who want new post notifications
-    const subscribers = await req.payload.find({
-      collection: 'subscribers',
-      where: {
-        and: [{ status: { equals: 'active' } }, { 'preferences.newPosts': { equals: true } }],
-      },
-      limit: 1000,
-      depth: 0,
+    await req.payload.jobs.queue({
+      task: 'sendPostNotificationBatch',
+      input: { postId: doc.id },
+      waitUntil,
+      queue: 'notifications',
     })
 
-    if (subscribers.docs.length === 0) {
-      await req.payload.update({
-        collection: 'posts',
-        id: doc.id,
-        data: { notificationSent: true },
-        req,
-      })
-      return doc
-    }
-
-    const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
-    const postUrl = `${serverUrl}/posts/${doc.slug}`
-
-    // Send emails in batches
-    const batchSize = 50
-    for (let i = 0; i < subscribers.docs.length; i += batchSize) {
-      const batch = subscribers.docs.slice(i, i + batchSize)
-
-      await Promise.all(
-        batch.map(async (subscriber) => {
-          const unsubscribeUrl = `${serverUrl}/unsubscribe?token=${subscriber.unsubscribeToken}`
-
-          const variables = {
-            postTitle: doc.title || '',
-            postExcerpt: doc.excerpt || '',
-            postUrl,
-            unsubscribeUrl,
-          }
-
-          const template = await emailService.getTemplate('newPostSubscriber', variables)
-
-          return emailService.send({
-            to: subscriber.email,
-            subject: template?.subject || `Novi članak: ${doc.title}`,
-            html:
-              template?.html ||
-              `
-              <p>${doc.excerpt || ''}</p>
-              <p>Pročitajte cijeli članak: <a href="${postUrl}">${postUrl}</a></p>
-              <hr style="margin: 30px 0;">
-              <p style="font-size: 12px; color: #666;">
-                Ne želite više primati obavijesti? <a href="${unsubscribeUrl}">Odjavite se</a>
-              </p>
-            `,
-          })
-        }),
-      )
-    }
-
-    // Mark notification as sent
-    await req.payload.update({
-      collection: 'posts',
-      id: doc.id,
-      data: { notificationSent: true },
-      req,
-    })
-
-    console.log(`Notified ${subscribers.docs.length} subscribers about new post: ${doc.title}`)
+    console.log(`[notifySubscribersOnNewPost] Queued notification job for post: ${doc.title}`)
   } catch (error) {
-    console.error('Failed to send new post notifications:', error)
+    console.error('Failed to queue post notification job:', error)
   }
 
   return doc

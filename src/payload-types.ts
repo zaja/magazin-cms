@@ -77,6 +77,7 @@ export interface Config {
     subscribers: Subscriber;
     'rss-feeds': RssFeed;
     'imported-posts': ImportedPost;
+    newsletters: Newsletter;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -104,6 +105,7 @@ export interface Config {
     subscribers: SubscribersSelect<false> | SubscribersSelect<true>;
     'rss-feeds': RssFeedsSelect<false> | RssFeedsSelect<true>;
     'imported-posts': ImportedPostsSelect<false> | ImportedPostsSelect<true>;
+    newsletters: NewslettersSelect<false> | NewslettersSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -126,6 +128,7 @@ export interface Config {
     seo: Seo;
     'email-config': EmailConfig;
     'content-styles': ContentStyle;
+    'payload-jobs-stats': PayloadJobsStat;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
@@ -134,6 +137,7 @@ export interface Config {
     seo: SeoSelect<false> | SeoSelect<true>;
     'email-config': EmailConfigSelect<false> | EmailConfigSelect<true>;
     'content-styles': ContentStylesSelect<false> | ContentStylesSelect<true>;
+    'payload-jobs-stats': PayloadJobsStatsSelect<false> | PayloadJobsStatsSelect<true>;
   };
   locale: 'en' | 'hr';
   user: User & {
@@ -141,6 +145,9 @@ export interface Config {
   };
   jobs: {
     tasks: {
+      sendPostNotificationBatch: TaskSendPostNotificationBatch;
+      sendWeeklyDigest: TaskSendWeeklyDigest;
+      sendNewsletter: TaskSendNewsletter;
       schedulePublish: TaskSchedulePublish;
       inline: {
         input: unknown;
@@ -931,8 +938,18 @@ export interface Subscriber {
   name?: string | null;
   status: 'pending' | 'active' | 'unsubscribed' | 'bounced';
   preferences?: {
+    /**
+     * Receive batched email when new posts are published (max 1x per 2 hours)
+     */
     newPosts?: boolean | null;
+    /**
+     * Receive a weekly summary of all new posts (every Monday)
+     */
+    weeklyDigest?: boolean | null;
     commentReplies?: boolean | null;
+    /**
+     * Receive manually sent newsletters from editors
+     */
     newsletter?: boolean | null;
   };
   subscribedAt?: string | null;
@@ -1065,6 +1082,46 @@ export interface ImportedPost {
    * Process identifier holding the lock
    */
   lockedBy?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "newsletters".
+ */
+export interface Newsletter {
+  id: number;
+  subject: string;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  /**
+   * Auto-generated HTML from rich text content
+   */
+  contentHtml?: string | null;
+  audience: 'all_active' | 'newsletter_only' | 'digest_subscribers';
+  status: 'draft' | 'queued' | 'sent';
+  sentAt?: string | null;
+  /**
+   * Broj poslanih emailova
+   */
+  sentCount?: number | null;
+  /**
+   * Opcionalno: zakaži slanje za određeni datum/vrijeme
+   */
+  scheduledFor?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1211,7 +1268,7 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-        taskSlug: 'inline' | 'schedulePublish';
+        taskSlug: 'inline' | 'sendPostNotificationBatch' | 'sendWeeklyDigest' | 'sendNewsletter' | 'schedulePublish';
         taskID: string;
         input?:
           | {
@@ -1244,10 +1301,21 @@ export interface PayloadJob {
         id?: string | null;
       }[]
     | null;
-  taskSlug?: ('inline' | 'schedulePublish') | null;
+  taskSlug?:
+    | ('inline' | 'sendPostNotificationBatch' | 'sendWeeklyDigest' | 'sendNewsletter' | 'schedulePublish')
+    | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
+  meta?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1297,6 +1365,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'imported-posts';
         value: number | ImportedPost;
+      } | null)
+    | ({
+        relationTo: 'newsletters';
+        value: number | Newsletter;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -1736,6 +1808,7 @@ export interface SubscribersSelect<T extends boolean = true> {
     | T
     | {
         newPosts?: T;
+        weeklyDigest?: T;
         commentReplies?: T;
         newsletter?: T;
       };
@@ -1787,6 +1860,22 @@ export interface ImportedPostsSelect<T extends boolean = true> {
   metadata?: T;
   lockedAt?: T;
   lockedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "newsletters_select".
+ */
+export interface NewslettersSelect<T extends boolean = true> {
+  subject?: T;
+  content?: T;
+  contentHtml?: T;
+  audience?: T;
+  status?: T;
+  sentAt?: T;
+  sentCount?: T;
+  scheduledFor?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2018,6 +2107,7 @@ export interface PayloadJobsSelect<T extends boolean = true> {
   queue?: T;
   waitUntil?: T;
   processing?: T;
+  meta?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2573,6 +2663,24 @@ export interface ContentStyle {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs-stats".
+ */
+export interface PayloadJobsStat {
+  id: number;
+  stats?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
@@ -2807,6 +2915,52 @@ export interface ContentStylesSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs-stats_select".
+ */
+export interface PayloadJobsStatsSelect<T extends boolean = true> {
+  stats?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskSendPostNotificationBatch".
+ */
+export interface TaskSendPostNotificationBatch {
+  input: {
+    postId?: number | null;
+  };
+  output: {
+    sent?: number | null;
+    posts?: number | null;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskSendWeeklyDigest".
+ */
+export interface TaskSendWeeklyDigest {
+  input?: unknown;
+  output: {
+    sent?: number | null;
+    posts?: number | null;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskSendNewsletter".
+ */
+export interface TaskSendNewsletter {
+  input: {
+    newsletterId: number;
+  };
+  output: {
+    sent?: number | null;
+  };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

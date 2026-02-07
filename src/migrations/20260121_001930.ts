@@ -34,9 +34,11 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE TYPE "public"."enum_subscribers_status" AS ENUM('pending', 'active', 'unsubscribed', 'bounced');
   CREATE TYPE "public"."enum_redirects_to_type" AS ENUM('reference', 'custom');
   CREATE TYPE "public"."enum_forms_confirmation_type" AS ENUM('message', 'redirect');
-  CREATE TYPE "public"."enum_payload_jobs_log_task_slug" AS ENUM('inline', 'schedulePublish');
+  CREATE TYPE "public"."enum_payload_jobs_log_task_slug" AS ENUM('inline', 'schedulePublish', 'sendPostNotificationBatch', 'sendWeeklyDigest', 'sendNewsletter');
   CREATE TYPE "public"."enum_payload_jobs_log_state" AS ENUM('failed', 'succeeded');
-  CREATE TYPE "public"."enum_payload_jobs_task_slug" AS ENUM('inline', 'schedulePublish');
+  CREATE TYPE "public"."enum_payload_jobs_task_slug" AS ENUM('inline', 'schedulePublish', 'sendPostNotificationBatch', 'sendWeeklyDigest', 'sendNewsletter');
+  CREATE TYPE "public"."enum_newsletters_audience" AS ENUM('all_active', 'newsletter_only', 'digest_subscribers');
+  CREATE TYPE "public"."enum_newsletters_status" AS ENUM('draft', 'queued', 'sent');
   CREATE TYPE "public"."enum_payload_folders_folder_type" AS ENUM('media');
   CREATE TYPE "public"."enum_header_nav_items_link_type" AS ENUM('reference', 'custom');
   CREATE TYPE "public"."enum_footer_nav_items_link_type" AS ENUM('reference', 'custom');
@@ -1065,6 +1067,20 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"created_at" timestamp(3) with time zone
   );
   
+  CREATE TABLE "newsletters" (
+  	"id" serial PRIMARY KEY NOT NULL,
+  	"subject" varchar NOT NULL,
+  	"content" jsonb NOT NULL,
+  	"content_html" varchar,
+  	"audience" "enum_newsletters_audience" DEFAULT 'newsletter_only' NOT NULL,
+  	"status" "enum_newsletters_status" DEFAULT 'draft' NOT NULL,
+  	"sent_at" timestamp(3) with time zone,
+  	"sent_count" numeric DEFAULT 0,
+  	"scheduled_for" timestamp(3) with time zone,
+  	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+  	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
+  );
+  
   CREATE TABLE "email_config" (
   	"id" serial PRIMARY KEY NOT NULL,
   	"provider" "enum_email_config_provider" DEFAULT 'smtp' NOT NULL,
@@ -1078,16 +1094,31 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"resend_api_key" varchar,
   	"resend_from_email" varchar,
   	"resend_from_name" varchar,
+  	"templates_new_comment_admin_subject" varchar DEFAULT 'Novi komentar na post: {{postTitle}}',
   	"templates_new_comment_admin" jsonb,
+  	"templates_comment_approved_subject" varchar DEFAULT 'Vaš komentar je odobren!',
   	"templates_comment_approved" jsonb,
+  	"templates_comment_reply_subject" varchar DEFAULT 'Novi odgovor na vaš komentar: {{postTitle}}',
   	"templates_comment_reply" jsonb,
+  	"templates_new_post_subscriber_subject" varchar DEFAULT 'Novi članak: {{postTitle}}',
   	"templates_new_post_subscriber" jsonb,
+  	"templates_subscribe_confirmation_subject" varchar DEFAULT 'Potvrdite pretplatu na newsletter',
   	"templates_subscribe_confirmation" jsonb,
+  	"templates_password_reset_subject" varchar DEFAULT 'Resetiranje lozinke',
   	"templates_password_reset" jsonb,
+  	"templates_magic_link_subject" varchar DEFAULT 'Vaš link za prijavu',
+  	"templates_magic_link" jsonb,
+  	"templates_weekly_digest_subject" varchar DEFAULT 'Tjedni pregled — {{postCount}} novih članaka',
+  	"templates_weekly_digest" jsonb,
+  	"templates_post_notification_batch_subject" varchar DEFAULT '{{postCount}} novih članaka na portalu',
+  	"templates_post_notification_batch" jsonb,
   	"test_email" varchar,
   	"updated_at" timestamp(3) with time zone,
   	"created_at" timestamp(3) with time zone
   );
+  
+  CREATE INDEX "newsletters_updated_at_idx" ON "newsletters" USING btree ("updated_at");
+  CREATE INDEX "newsletters_created_at_idx" ON "newsletters" USING btree ("created_at");
   
   ALTER TABLE "pages_hero_links" ADD CONSTRAINT "pages_hero_links_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "pages_blocks_cta_links" ADD CONSTRAINT "pages_blocks_cta_links_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages_blocks_cta"("id") ON DELETE cascade ON UPDATE no action;

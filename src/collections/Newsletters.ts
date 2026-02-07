@@ -37,12 +37,27 @@ export const Newsletters: CollectionConfig = {
       type: 'text',
       required: true,
       label: 'Naslov emaila',
+      admin: {
+        description: 'Možete koristiti: {{siteName}}, {{date}}, {{subscriberCount}}',
+      },
+    },
+    {
+      name: 'availableTags',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '@/components/admin/NewsletterTagsInfo',
+        },
+      },
     },
     {
       name: 'content',
       type: 'richText',
       required: true,
       label: 'Sadržaj',
+      admin: {
+        description: 'U tekstu možete koristiti tagove: {{subscriberName}}, {{unsubscribeUrl}}, {{preferencesUrl}}, {{siteName}}, {{siteUrl}}, {{date}}',
+      },
       editor: lexicalEditor({
         features: [
           ParagraphFeature(),

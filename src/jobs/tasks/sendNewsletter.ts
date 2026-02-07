@@ -70,14 +70,38 @@ export async function sendNewsletter({
   }
 
   const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
-  const subject = newsletter.subject as string
   const contentHtml = newsletter.contentHtml as string | undefined
 
   // Use contentHtml if available, otherwise use a simple text fallback
   const bodyHtml = contentHtml || '<p>Newsletter content</p>'
 
+  // Fetch site name from settings
+  let siteName = 'Portal'
+  try {
+    const settings = await payload.findGlobal({ slug: 'settings' })
+    siteName = (settings as unknown as Record<string, string>).siteName || siteName
+  } catch {
+    // ignore
+  }
+
+  const today = new Date().toLocaleDateString('hr-HR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  })
+
   let sentCount = 0
   const batchSize = 50
+
+  // Replace global tags in subject and body
+  const replaceGlobalTags = (text: string) =>
+    text
+      .replace(/\{\{siteName\}\}/g, siteName)
+      .replace(/\{\{siteUrl\}\}/g, serverUrl)
+      .replace(/\{\{date\}\}/g, today)
+      .replace(/\{\{subscriberCount\}\}/g, String(subscribers.docs.length))
+
+  const subjectTemplate = replaceGlobalTags(newsletter.subject as string)
 
   for (let i = 0; i < subscribers.docs.length; i += batchSize) {
     const batch = subscribers.docs.slice(i, i + batchSize)
@@ -86,10 +110,22 @@ export async function sendNewsletter({
       batch.map(async (subscriber) => {
         const unsubscribeUrl = `${serverUrl}/api/unsubscribe?token=${subscriber.unsubscribeToken}`
         const preferencesUrl = `${serverUrl}/account/preferences?token=${subscriber.unsubscribeToken}`
+        const subscriberName = subscriber.name || 'pretplatniče'
+
+        // Replace per-subscriber tags
+        const replaceSubscriberTags = (text: string) =>
+          text
+            .replace(/\{\{subscriberName\}\}/g, subscriberName)
+            .replace(/\{\{subscriberEmail\}\}/g, subscriber.email)
+            .replace(/\{\{unsubscribeUrl\}\}/g, unsubscribeUrl)
+            .replace(/\{\{preferencesUrl\}\}/g, preferencesUrl)
+
+        const subject = replaceSubscriberTags(subjectTemplate)
+        const personalizedBody = replaceSubscriberTags(replaceGlobalTags(bodyHtml))
 
         const html = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            ${bodyHtml}
+            ${personalizedBody}
             <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
             <p style="font-size: 12px; color: #666;">
               <a href="${preferencesUrl}">Upravljaj obavijestima</a> · <a href="${unsubscribeUrl}">Odjavi se</a>
@@ -115,7 +151,7 @@ export async function sendNewsletter({
     },
   })
 
-  console.log(`[sendNewsletter] Sent ${sentCount} emails for newsletter "${subject}"`)
+  console.log(`[sendNewsletter] Sent ${sentCount} emails for newsletter "${newsletter.subject}"`)
 
   return { output: { sent: sentCount }, state: 'succeeded' }
 }

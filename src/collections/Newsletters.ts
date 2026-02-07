@@ -1,5 +1,22 @@
 import type { CollectionConfig } from 'payload'
 import { authenticated } from '../access/authenticated'
+import {
+  BoldFeature,
+  ItalicFeature,
+  UnderlineFeature,
+  StrikethroughFeature,
+  HeadingFeature,
+  ParagraphFeature,
+  LinkFeature,
+  OrderedListFeature,
+  UnorderedListFeature,
+  BlockquoteFeature,
+  HorizontalRuleFeature,
+  AlignFeature,
+  FixedToolbarFeature,
+  InlineToolbarFeature,
+  lexicalEditor,
+} from '@payloadcms/richtext-lexical'
 
 export const Newsletters: CollectionConfig = {
   slug: 'newsletters',
@@ -26,6 +43,24 @@ export const Newsletters: CollectionConfig = {
       type: 'richText',
       required: true,
       label: 'Sadržaj',
+      editor: lexicalEditor({
+        features: [
+          ParagraphFeature(),
+          HeadingFeature({ enabledHeadingSizes: ['h2', 'h3', 'h4'] }),
+          BoldFeature(),
+          ItalicFeature(),
+          UnderlineFeature(),
+          StrikethroughFeature(),
+          LinkFeature({}),
+          OrderedListFeature(),
+          UnorderedListFeature(),
+          BlockquoteFeature(),
+          HorizontalRuleFeature(),
+          AlignFeature(),
+          FixedToolbarFeature(),
+          InlineToolbarFeature(),
+        ],
+      }),
     },
     {
       name: 'contentHtml',

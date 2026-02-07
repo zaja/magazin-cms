@@ -67,11 +67,13 @@ export async function sendWeeklyDigest({
       <tr>
         <td style="padding: 16px 0; border-bottom: 1px solid #eee;">
           <a href="${postUrl}" style="color: #1a1a1a; text-decoration: none; font-size: 18px; font-weight: 600;">${post.title}</a>
-          <p style="margin: 4px 0 0; color: #666; font-size: 14px;">${(post as unknown as Record<string, unknown>).excerpt || ''}</p>
+          <p style="margin: 4px 0 0; color: #666; font-size: 14px;">${(post as unknown as Record<string, string>).excerpt || ''}</p>
         </td>
       </tr>`
     })
     .join('')
+
+  const postListTable = `<table style="width: 100%; border-collapse: collapse;">${postListHtml}</table>`
 
   // Send in batches
   const batchSize = 50
@@ -83,14 +85,23 @@ export async function sendWeeklyDigest({
         const unsubscribeUrl = `${serverUrl}/api/unsubscribe?token=${subscriber.unsubscribeToken}`
         const preferencesUrl = `${serverUrl}/account/preferences?token=${subscriber.unsubscribeToken}`
 
-        const subject = `Tjedni pregled — ${posts.docs.length} ${posts.docs.length === 1 ? 'novi članak' : 'novih članaka'}`
-        const html = `
+        const variables = {
+          postCount: String(posts.docs.length),
+          postList: postListTable,
+          siteUrl: serverUrl,
+          preferencesUrl,
+          unsubscribeUrl,
+        }
+
+        const template = await emailService.getTemplate('weeklyDigest', variables)
+        const subject = template?.subject || `Tjedni pregled — ${posts.docs.length} ${posts.docs.length === 1 ? 'novi članak' : 'novih članaka'}`
+        const html =
+          template?.html ||
+          `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #1a1a1a; border-bottom: 2px solid #1a1a1a; padding-bottom: 8px;">Tjedni pregled</h2>
             <p style="color: #666;">Evo što smo objavili ovaj tjedan:</p>
-            <table style="width: 100%; border-collapse: collapse;">
-              ${postListHtml}
-            </table>
+            ${postListTable}
             <p style="margin-top: 24px;">
               <a href="${serverUrl}" style="background: #1a1a1a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">Posjeti portal</a>
             </p>

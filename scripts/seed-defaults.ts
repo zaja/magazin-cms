@@ -294,11 +294,27 @@ async function seedDefaults() {
             'Link vrijedi {{expiresIn}}. Ako niste zatražili prijavu, možete ignorirati ovaj email.',
           ),
         ]),
+        weeklyDigestSubject: 'Tjedni pregled — {{postCount}} novih članaka',
+        weeklyDigest: wrapRoot([
+          lexicalParagraph('Evo što smo objavili ovaj tjedan:'),
+          lexicalParagraph('{{postList}}'),
+          lexicalParagraph(
+            'Upravljaj obavijestima: {{preferencesUrl}} · Odjavi se: {{unsubscribeUrl}}',
+          ),
+        ]),
+        postNotificationBatchSubject: '{{postCount}} novih članaka na portalu',
+        postNotificationBatch: wrapRoot([
+          lexicalParagraph('Objavljeni su novi članci:'),
+          lexicalParagraph('{{postList}}'),
+          lexicalParagraph(
+            'Upravljaj obavijestima: {{preferencesUrl}} · Odjavi se: {{unsubscribeUrl}}',
+          ),
+        ]),
       } as any,
     },
   })
 
-  console.log('   ✅ Email templates: 7 templates seeded')
+  console.log('   ✅ Email templates: 9 templates seeded')
 
   console.log('\n✅ All defaults seeded successfully!\n')
   process.exit(0)

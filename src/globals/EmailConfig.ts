@@ -216,6 +216,42 @@ export const EmailConfig: GlobalConfig = {
             description: 'Variables: {{loginUrl}}, {{email}}, {{expiresIn}}',
           },
         },
+        {
+          name: 'weeklyDigestSubject',
+          type: 'text',
+          label: 'Weekly Digest - Subject',
+          defaultValue: 'Tjedni pregled — {{postCount}} novih članaka',
+          admin: {
+            description: 'Variables: {{postCount}}',
+          },
+        },
+        {
+          name: 'weeklyDigest',
+          type: 'richText',
+          label: 'Weekly Digest - Body (Header)',
+          admin: {
+            description:
+              'Header tekst iznad liste postova. Variables: {{postCount}}, {{postList}}, {{siteUrl}}, {{preferencesUrl}}, {{unsubscribeUrl}}',
+          },
+        },
+        {
+          name: 'postNotificationBatchSubject',
+          type: 'text',
+          label: 'Post Notification Batch - Subject',
+          defaultValue: '{{postCount}} novih članaka na portalu',
+          admin: {
+            description: 'Variables: {{postCount}}, {{firstPostTitle}}',
+          },
+        },
+        {
+          name: 'postNotificationBatch',
+          type: 'richText',
+          label: 'Post Notification Batch - Body (Header)',
+          admin: {
+            description:
+              'Header tekst iznad liste postova. Variables: {{postCount}}, {{postList}}, {{preferencesUrl}}, {{unsubscribeUrl}}',
+          },
+        },
       ],
     },
     {

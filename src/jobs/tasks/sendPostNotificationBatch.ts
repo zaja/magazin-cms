@@ -9,10 +9,10 @@ import { emailService } from '../../utilities/emailService'
  * per subscriber (or one email if only 1 post).
  */
 export async function sendPostNotificationBatch({
-  input,
+  _input,
   req,
 }: {
-  input: { postId?: number }
+  _input?: { postId?: number }
   req: { payload: Payload }
 }): Promise<{ output: { sent: number; posts: number }; state: 'succeeded' }> {
   const { payload } = req
@@ -53,6 +53,20 @@ export async function sendPostNotificationBatch({
   const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
   let sentCount = 0
 
+  // Build post list HTML for multi-post emails
+  const postListHtml = posts.docs
+    .map((post) => {
+      const postUrl = `${serverUrl}/posts/${post.slug}`
+      return `
+      <tr>
+        <td style="padding: 16px 0; border-bottom: 1px solid #eee;">
+          <a href="${postUrl}" style="color: #1a1a1a; text-decoration: none; font-size: 18px; font-weight: 600;">${post.title}</a>
+          <p style="margin: 4px 0 0; color: #666; font-size: 14px;">${(post as unknown as Record<string, string>).excerpt || ''}</p>
+        </td>
+      </tr>`
+    })
+    .join('')
+
   if (subscribers.docs.length > 0) {
     const batchSize = 50
     for (let i = 0; i < subscribers.docs.length; i += batchSize) {
@@ -67,13 +81,13 @@ export async function sendPostNotificationBatch({
           let html: string
 
           if (posts.docs.length === 1) {
-            // Single post — normal notification
+            // Single post — use existing newPostSubscriber template
             const post = posts.docs[0]
             const postUrl = `${serverUrl}/posts/${post.slug}`
 
             const variables = {
               postTitle: post.title || '',
-              postExcerpt: (post as any).excerpt || '',
+              postExcerpt: (post as unknown as Record<string, string>).excerpt || '',
               postUrl,
               unsubscribeUrl,
               preferencesUrl,
@@ -86,7 +100,7 @@ export async function sendPostNotificationBatch({
               `
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                 <h2 style="color: #1a1a1a;">${post.title}</h2>
-                <p>${(post as any).excerpt || ''}</p>
+                <p>${variables.postExcerpt}</p>
                 <p><a href="${postUrl}" style="background: #1a1a1a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">Pročitaj članak</a></p>
                 <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
                 <p style="font-size: 12px; color: #666;">
@@ -95,27 +109,23 @@ export async function sendPostNotificationBatch({
               </div>
             `
           } else {
-            // Multiple posts — digest-style notification
-            const postListHtml = posts.docs
-              .map((post) => {
-                const postUrl = `${serverUrl}/posts/${post.slug}`
-                return `
-                <tr>
-                  <td style="padding: 16px 0; border-bottom: 1px solid #eee;">
-                    <a href="${postUrl}" style="color: #1a1a1a; text-decoration: none; font-size: 18px; font-weight: 600;">${post.title}</a>
-                    <p style="margin: 4px 0 0; color: #666; font-size: 14px;">${(post as any).excerpt || ''}</p>
-                  </td>
-                </tr>`
-              })
-              .join('')
+            // Multiple posts — use postNotificationBatch template
+            const variables = {
+              postCount: String(posts.docs.length),
+              firstPostTitle: posts.docs[0]?.title || '',
+              postList: `<table style="width: 100%; border-collapse: collapse;">${postListHtml}</table>`,
+              preferencesUrl,
+              unsubscribeUrl,
+            }
 
-            subject = `${posts.docs.length} novih članaka na portalu`
-            html = `
+            const template = await emailService.getTemplate('postNotificationBatch', variables)
+            subject = template?.subject || `${posts.docs.length} novih članaka na portalu`
+            html =
+              template?.html ||
+              `
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                 <h2 style="color: #1a1a1a;">${posts.docs.length} novih članaka</h2>
-                <table style="width: 100%; border-collapse: collapse;">
-                  ${postListHtml}
-                </table>
+                ${variables.postList}
                 <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
                 <p style="font-size: 12px; color: #666;">
                   <a href="${preferencesUrl}">Upravljaj obavijestima</a> · <a href="${unsubscribeUrl}">Odjavi se</a>
